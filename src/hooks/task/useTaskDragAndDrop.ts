@@ -9,7 +9,7 @@ interface UseDragAndDropProps {
   workspaceId: string
 }
 
-export function useDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) {
+export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) {
   const { mutate: updateTasksPositions } = useUpdateTasksPositions(workspaceId)
   const [localTasks, setLocalTasks] = useState<Task[] | null>(null)
   // ✅ activeTask state naar de hook verplaatst
@@ -76,7 +76,6 @@ export function useDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) {
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
-    // ✅ Reset activeTask hier
     setActiveTask(null);
     
     if (!localTasks) {

@@ -22,7 +22,7 @@ import {
   TagColorInternalName,
   getTagColorByName,
 } from "@/lib/tagColors";
-import { useCreateTag } from "@/hooks/useTags";
+import { useCreateTag } from "@/hooks/tag/useTags";
 import type { Tag } from "@/types";
 
 const tagCreateSchema = z.object({

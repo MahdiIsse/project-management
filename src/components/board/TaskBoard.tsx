@@ -1,20 +1,33 @@
 "use client";
 
-import { useState, useMemo } from "react"; // ✅ useMemo toevoegen
-import { useColumns } from "@/hooks/useColumns";
+import { useState, useMemo } from "react";
+import { useColumns } from "@/hooks/column/useColumns";
 import { useSearchParams } from "next/navigation";
 import { TaskColumn } from "./TaskColumn";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ColumnForm } from "../form/ColumnForm";
 import { Plus } from "lucide-react";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragOverlay,
+  DragStartEvent,
+  DragEndEvent,
+  DragOverEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useTasks } from "@/hooks";
-import { useDragAndDrop } from "@/hooks/useDragAndDrop";
+import { useTaskDragAndDrop } from "@/hooks/task/useTaskDragAndDrop";
+import { useColumnDragAndDrop } from "@/hooks/column/useColumnDragAndDrop";
 import { TaskCard } from "./TaskCard";
 
 export function TaskBoard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  // ❌ activeTask state weggehaald - zit nu in hook
 
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("workspace") ?? "";
@@ -26,14 +39,61 @@ export function TaskBoard() {
   } = useColumns(workspaceId);
   const { data: tasks = [] } = useTasks(workspaceId);
 
-  // ✅ Krijg activeTask direct van de hook
+  // Task drag and drop
   const {
-    handleDragEnd,
-    handleDragStart,
-    handleDragOver,
+    handleDragEnd: handleTaskDragEnd,
+    handleDragStart: handleTaskDragStart,
+    handleDragOver: handleTaskDragOver,
     displayTasks,
     activeTask,
-  } = useDragAndDrop({ tasks, workspaceId });
+  } = useTaskDragAndDrop({ tasks, workspaceId });
+
+  // Column drag and drop
+  const {
+    handleDragStart: handleColumnDragStart,
+    handleDragEnd: handleColumnDragEnd,
+    displayItems: displayColumns,
+    activeItem: activeColumn,
+  } = useColumnDragAndDrop({ columns: columns || [], workspaceId });
+
+  // Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 3,
+      },
+    })
+  );
+
+  // Combined handlers
+  const combinedDragStart = (event: DragStartEvent) => {
+    const dragType = event.active.data.current?.type;
+
+    if (dragType === "Task") {
+      handleTaskDragStart(event);
+    } else if (dragType === "Column") {
+      handleColumnDragStart(event);
+    }
+  };
+
+  const combinedDragEnd = (event: DragEndEvent) => {
+    const dragType = event.active.data.current?.type;
+
+    if (dragType === "Task") {
+      handleTaskDragEnd(event);
+    } else if (dragType === "Column") {
+      handleColumnDragEnd(event);
+    }
+  };
+
+  const combinedDragOver = (event: DragOverEvent) => {
+    const dragType = event.active.data.current?.type;
+
+    if (dragType === "Task") {
+      handleTaskDragOver(event);
+    }
+    // Column dragging doesn't need dragOver
+  };
 
   const tasksByColumn = useMemo(() => {
     return displayTasks.reduce((acc, task) => {
@@ -71,7 +131,6 @@ export function TaskBoard() {
     );
   }
 
-  // ✅ Eerste kolom dialog direct inline
   if (!columns || columns.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -95,21 +154,28 @@ export function TaskBoard() {
 
   return (
     <DndContext
-      onDragStart={handleDragStart} // ✅ Direct van hook
-      onDragEnd={handleDragEnd} // ✅ Direct van hook
-      onDragOver={handleDragOver}
+      sensors={sensors}
+      onDragStart={combinedDragStart}
+      onDragEnd={combinedDragEnd}
+      onDragOver={combinedDragOver}
     >
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <div className="flex h-full flex-col gap-4 lg:flex-row lg:overflow-x-auto">
-          {columns.map((column) => (
-            <TaskColumn
-              key={column.id}
-              column={column}
-              tasks={tasksByColumn[column.id] || []}
-              workspaceId={workspaceId}
-              activeTaskId={activeTask?.id}
-            />
-          ))}
+          <SortableContext
+            items={displayColumns.map((column) => column.id)}
+            strategy={horizontalListSortingStrategy}
+          >
+            {displayColumns.map((column) => (
+              <TaskColumn
+                key={column.id}
+                column={column}
+                tasks={tasksByColumn[column.id] || []}
+                workspaceId={workspaceId}
+                activeTaskId={activeTask?.id}
+                activeColumnId={activeColumn?.id}
+              />
+            ))}
+          </SortableContext>
 
           <DialogTrigger asChild>
             <div className="flex h-fit min-h-[200px] flex-shrink-0 flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/10 p-6 text-center transition-all duration-200 hover:border-muted-foreground/40 hover:bg-muted/20 hover:shadow-sm lg:w-64 cursor-pointer">
@@ -142,6 +208,18 @@ export function TaskBoard() {
               workspaceId={workspaceId}
               columnId={activeTask.columnId}
               index={0}
+            />
+          </div>
+        ) : null}
+
+        {activeColumn ? (
+          <div className="rotate-2 scale-105 shadow-2xl">
+            <TaskColumn
+              column={activeColumn}
+              tasks={tasksByColumn[activeColumn.id] || []}
+              workspaceId={workspaceId}
+              activeTaskId=""
+              activeColumnId=""
             />
           </div>
         ) : null}

@@ -36,14 +36,12 @@ import { nl } from "date-fns/locale";
 
 interface TaskFormProps {
   workspaceId: string;
-  columnId: string;
   taskToEdit?: Task;
   closeDialog: () => void;
 }
 
 export function TaskForm({
   workspaceId,
-  columnId,
   taskToEdit,
   closeDialog,
 }: TaskFormProps) {

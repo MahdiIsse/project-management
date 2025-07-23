@@ -4,6 +4,24 @@ import { useState } from "react";
 import { CircleDot, Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 
 import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
@@ -18,7 +36,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useWorkspaces, useDeleteWorkspace } from "@/hooks/useWorkspaces";
+import {
+  useWorkspaces,
+  useDeleteWorkspace,
+} from "@/hooks/workspace/useWorkspaces";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Dialog,
@@ -28,8 +49,8 @@ import {
 } from "@/components/ui/dialog";
 import { WorkspaceForm } from "@/components/form/WorkspaceForm";
 import { getWorkspaceTextColorByBg } from "@/lib/colors";
-import type { Tables } from "@/types/database.types";
 import { Workspace } from "@/types";
+import { WorkspacesList } from "./WorkspacesList";
 
 export function Workspaces() {
   const { data: workspaces } = useWorkspaces();
@@ -94,56 +115,13 @@ export function Workspaces() {
           </SidebarGroupAction>
         </div>
         <SidebarGroupContent>
-          <SidebarMenu className="space-y-1">
-            {workspaces?.map((workspace) => (
-              <SidebarMenuItem key={workspace.id}>
-                <div className="flex items-center justify-between w-full">
-                  <SidebarMenuButton
-                    asChild
-                    isActive={currentWorkspace === workspace.id}
-                    className={`flex-1 h-9 px-3 text-sm font-medium transition-colors ${
-                      currentWorkspace === workspace.id
-                        ? "bg-accent/40 text-accent-foreground border border-border/30"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                    }`}
-                  >
-                    <button onClick={() => handleWorkspaceChange(workspace.id)}>
-                      <CircleDot
-                        className={`h-3 w-3 shrink-0 ${getWorkspaceTextColorByBg(
-                          workspace.color || ""
-                        )}`}
-                      />
-                      <span className="truncate">{workspace.title}</span>
-                    </button>
-                  </SidebarMenuButton>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="h-6 w-6 flex items-center justify-center rounded-md hover:bg-accent/30 transition-colors text-muted-foreground hover:text-foreground">
-                        <MoreHorizontal className="h-3 w-3" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem
-                        onClick={() => handleEditWorkspace(workspace)}
-                        className="cursor-pointer"
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Bewerken
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteWorkspace(workspace.id)}
-                        className="cursor-pointer text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Verwijderen
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+          <WorkspacesList
+            workspaces={workspaces || []}
+            currentWorkspace={currentWorkspace}
+            onWorkspaceChange={handleWorkspaceChange}
+            onEditWorkspace={handleEditWorkspace}
+            onDeleteWorkspace={handleDeleteWorkspace}
+          />
         </SidebarGroupContent>
       </SidebarGroup>
 
@@ -159,7 +137,6 @@ export function Workspaces() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Workspace Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

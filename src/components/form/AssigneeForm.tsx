@@ -1,6 +1,9 @@
 "use client";
 
-import { useCreateAssignee, useUpdateAssignee } from "@/hooks/useAssignees";
+import {
+  useCreateAssignee,
+  useUpdateAssignee,
+} from "@/hooks/assignee/useAssignees";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { assigneeSchema, AssigneeSchemaValues } from "@/schemas/assignees";

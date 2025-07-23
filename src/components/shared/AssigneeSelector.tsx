@@ -13,12 +13,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Plus, Search, Check } from "lucide-react";
 import type { Assignee } from "@/types";
-import { useAssignees } from "@/hooks/useAssignees";
+import { useAssignees } from "@/hooks/assignee/useAssignees";
 import {
   useTaskAssignees,
   useAddAssigneeToTask,
   useRemoveAssigneeFromTask,
-} from "@/hooks/useTaskAssignees";
+} from "@/hooks/task/useTaskAssignees";
 
 interface AssigneeSelectorProps {
   taskId: string;

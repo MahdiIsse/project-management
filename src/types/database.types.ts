@@ -224,6 +224,7 @@ export type Database = {
           description: string | null
           id: string
           owner_id: string | null
+          position: number
           title: string
           updated_at: string | null
         }
@@ -233,6 +234,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_id?: string | null
+          position?: number
           title: string
           updated_at?: string | null
         }
@@ -242,6 +244,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_id?: string | null
+          position?: number
           title?: string
           updated_at?: string | null
         }

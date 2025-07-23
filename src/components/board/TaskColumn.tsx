@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useDeleteColumn } from "@/hooks/useColumns";
+import { useDeleteColumn } from "@/hooks/column/useColumns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -24,21 +24,24 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ColumnForm } from "@/components/form/ColumnForm";
-import { Ellipsis, Settings, Trash2 } from "lucide-react";
+import { Ellipsis, Settings, Trash2, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Column, Task } from "@/types";
 import {
   SortableContext,
   verticalListSortingStrategy,
+  useSortable,
 } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useDroppable } from "@dnd-kit/core";
-import { TaskCard } from "./TaskCard"; //
+import { TaskCard } from "./TaskCard";
 
 interface TaskColumnProps {
   column: Column;
   workspaceId: string;
   tasks: Task[];
   activeTaskId?: string;
+  activeColumnId?: string;
 }
 
 export function TaskColumn({
@@ -46,19 +49,48 @@ export function TaskColumn({
   workspaceId,
   tasks,
   activeTaskId,
+  activeColumnId,
 }: TaskColumnProps) {
   const [isColumnFormOpen, setIsColumnFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { mutate: deleteColumn, isPending: isDeleting } = useDeleteColumn();
 
-  const { setNodeRef: setColumnRef, isOver: isColumnOver } = useDroppable({
+  // Column sorting
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setSortableRef,
+    transform,
+    transition,
+    isDragging: isColumnDragging,
+  } = useSortable({
+    id: column.id,
+    data: {
+      type: "Column",
+      column,
+    },
+  });
+
+  // Task dropping (existing)
+  const { setNodeRef: setDroppableRef, isOver: isColumnOver } = useDroppable({
     id: column.id,
     data: {
       columnId: column.id,
       type: "Column",
     },
   });
+
+  // Combine refs
+  const setNodeRef = (node: HTMLElement | null) => {
+    setSortableRef(node);
+    setDroppableRef(node);
+  };
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   const handleEditColumn = () => {
     setIsColumnFormOpen(true);
@@ -86,14 +118,24 @@ export function TaskColumn({
 
   return (
     <div
-      ref={setColumnRef}
+      ref={setNodeRef}
+      style={style}
       className={cn(
         "flex flex-col gap-4 lg:w-64 flex-shrink-0 min-h-[300px]",
-        isColumnOver && tasks.length === 0 && "ring-2 ring-primary/50"
+        isColumnOver && tasks.length === 0 && "ring-2 ring-primary/50",
+        isColumnDragging && "opacity-50",
+        activeColumnId === column.id && "opacity-30"
       )}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+          <button
+            className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
           <h2 className="font-bold">{column.title}</h2>
           <Badge variant="secondary">{tasks.length}</Badge>
         </div>
@@ -149,7 +191,6 @@ export function TaskColumn({
             </div>
           ))}
 
-          {/* Lege kolom state */}
           {tasks.length === 0 && (
             <div
               className={cn(

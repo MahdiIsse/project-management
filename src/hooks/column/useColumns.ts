@@ -1,6 +1,7 @@
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query"
-import {getColumns, createColumn, updateColumn, deleteColumn} from "@/actions/columnActions"
+import {getColumns, createColumn, updateColumn, deleteColumn, updateColumnPositions} from "@/actions/columnActions"
 import {ColumnSchemaValues} from "@/schemas/columns"
+import {Column} from "@/types"
 
 export function useColumns(workspaceId: string){
   return useQuery({
@@ -39,5 +40,33 @@ export function useDeleteColumn() {
       return deleteColumn(id)
     },
     onSuccess: ()=> queryClient.invalidateQueries({queryKey: ["columns"]})
+  })
+}
+
+export function useUpdateColumnsPositions(){
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async({updates, optimisticColumns, workspaceId}: {
+      updates: {id: string, position: number}[];
+      optimisticColumns: Column[];
+      workspaceId: string
+    }) => {
+      return updateColumnPositions(updates)
+    },
+    onMutate: async({optimisticColumns, workspaceId}) => {
+      await queryClient.cancelQueries({queryKey: ["columns", workspaceId]}) 
+
+      const previousColumns = queryClient.getQueryData<Column[]>(["columns", workspaceId])
+
+      queryClient.setQueryData(["columns", workspaceId], optimisticColumns)
+      return {previousColumns, workspaceId}
+    },
+
+    onError: (err, variables, context) => {
+      if (context?.previousColumns && context?.workspaceId) {
+        queryClient.setQueryData(["columns", context.workspaceId], context.previousColumns)
+      } 
+    }
   })
 }

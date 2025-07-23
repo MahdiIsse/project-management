@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { tagSchema, TagSchemaValues } from "@/schemas/tags";
-import { useCreateTag, useUpdateTag } from "@/hooks/useTags";
+import { useCreateTag, useUpdateTag } from "@/hooks/tag/useTags";
 import {
   Form,
   FormField,

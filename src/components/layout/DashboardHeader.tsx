@@ -9,8 +9,8 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { TaskForm } from "@/components/form/TaskForm";
 import { Plus, List, LayoutGrid, Calendar, Search, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useWorkspaces } from "@/hooks/useWorkspaces";
-import { useAssignees } from "@/hooks/useAssignees";
+import { useWorkspaces } from "@/hooks/workspace/useWorkspaces";
+import { useAssignees } from "@/hooks/assignee/useAssignees";
 
 // View mode type
 type ViewMode = "list" | "board" | "calendar";
@@ -88,7 +88,10 @@ export function DashboardHeader({
                 key={assignee.id}
                 className="w-10 h-10 border-2 border-background hover:z-10 transition-all duration-200"
               >
-                <AvatarImage src={assignee.avatarUrl} alt={assignee.name} />
+                <AvatarImage
+                  src={assignee.avatarUrl || undefined}
+                  alt={assignee.name}
+                />
                 <AvatarFallback className="text-sm font-medium">
                   {assignee.name
                     .split(" ")
@@ -112,18 +115,20 @@ export function DashboardHeader({
             <DialogTrigger asChild>
               <Button
                 className="font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-                disabled={!activeWorkspace} // Disable if no workspace selected
+                disabled={!activeWorkspace}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Taak Toevoegen
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <TaskForm
-                workspaceId={currentWorkspaceId}
-                closeDialog={() => setIsDialogOpen(false)}
-              />
-            </DialogContent>
+            {currentWorkspaceId && (
+              <DialogContent>
+                <TaskForm
+                  workspaceId={currentWorkspaceId}
+                  closeDialog={() => setIsDialogOpen(false)}
+                />
+              </DialogContent>
+            )}
           </Dialog>
         </div>
       </div>

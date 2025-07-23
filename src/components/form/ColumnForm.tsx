@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { columnSchema, ColumnSchemaValues } from "@/schemas/columns";
-import { useCreateColumn, useUpdateColumn } from "@/hooks/useColumns";
+import { useCreateColumn, useUpdateColumn } from "@/hooks/column/useColumns";
 import {
   Form,
   FormItem,

@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateWorkspace, useUpdateWorkspace } from "@/hooks/useWorkspaces";
+import {
+  useCreateWorkspace,
+  useUpdateWorkspace,
+} from "@/hooks/workspace/useWorkspaces";
 
 import { workspaceSchema, WorkspaceSchemaValues } from "@/schemas/workspace";
 import { useForm } from "react-hook-form";

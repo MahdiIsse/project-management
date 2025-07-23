@@ -6,6 +6,7 @@ export function mapWorkspace(row: Tables<"workspaces">) : Workspace {
     title: row.title,
     description: row.description,
     color: row.color,
+    position: row.position,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     ownerId: row.owner_id

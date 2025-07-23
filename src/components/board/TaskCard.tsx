@@ -6,7 +6,10 @@ import { SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { TaskForm } from "../form/TaskForm";
-import { useUpdateTaskPriority, useUpdateTaskDueDate } from "@/hooks/useTasks";
+import {
+  useUpdateTaskPriority,
+  useUpdateTaskDueDate,
+} from "@/hooks/task/useTasks";
 import { PrioritySelector } from "../shared/PrioritySelector";
 import { DueDatePicker } from "../shared/DueDatePicker";
 import { AssigneeSelector } from "../shared/AssigneeSelector";
@@ -91,7 +94,6 @@ export function TaskCard({
               <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
                 <TaskForm
                   workspaceId={workspaceId}
-                  columnId={task.columnId}
                   taskToEdit={task}
                   closeDialog={() => setIsDialogOpen(false)}
                 />

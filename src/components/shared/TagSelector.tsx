@@ -14,12 +14,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Plus, Search, Check, Tag as TagIcon } from "lucide-react";
 import type { Tag } from "@/types";
-import { useTags } from "@/hooks/useTags";
+import { useTags } from "@/hooks/tag/useTags";
 import {
   useTaskTags,
   useAddTagToTask,
   useRemoveTagFromTask,
-} from "@/hooks/useTaskTags";
+} from "@/hooks/task/useTaskTags";
 import { TagCreateForm } from "./TagCreateForm";
 
 interface TagSelectorProps {

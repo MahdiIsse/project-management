@@ -6,4 +6,5 @@ export type Workspace = {
   createdAt?: string | null;
   updatedAt?: string | null;
   ownerId?: string | null;
+  position: number;
 };
