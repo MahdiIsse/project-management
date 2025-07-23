@@ -11,6 +11,7 @@ export function mapTask(row: Tables<"tasks"> & {
     description: row.description,
     dueDate: row.due_date,
     priority: isValidPriority(row.priority) ? row.priority : undefined,
+    position: row.position,
     columnId: row.column_id!,
     workspaceId: row.workspace_id!,
     createdAt: row.created_at,

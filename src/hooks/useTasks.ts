@@ -1,11 +1,12 @@
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query"
-import {getTasks, createTask, updateTask, deleteTask, updateTaskPriority, updateTaskDueDate} from "@/actions/taskActions"
+import {getTasks, createTask, updateTask, deleteTask, updateTaskPriority, updateTaskDueDate, updateTasksPositions} from "@/actions/taskActions"
 import {TaskSchemaValues} from "@/schemas/tasks"
+import type {Task} from "@/types"
 
-export function useTasks(columnId: string, workspaceId: string){
+export function useTasks(workspaceId: string){
   return useQuery({
-    queryKey: ["tasks", workspaceId, columnId],
-    queryFn: ()=> getTasks(columnId, workspaceId)
+    queryKey: ["tasks", workspaceId],
+    queryFn: ()=> getTasks(workspaceId)
   })
 }
 
@@ -24,7 +25,7 @@ export function useUpdateTask(){
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ data, taskId}: {data:TaskSchemaValues, taskId: string}) => {
+    mutationFn: async ({ data, taskId}: {data: Partial<Task>, taskId: string}) => {
       return updateTask(data, taskId)
     },
     onSuccess: ()=> queryClient.invalidateQueries({queryKey: ["tasks"]})
@@ -62,4 +63,38 @@ export function useUpdateTaskDueDate(){
     },
     onSuccess: () => queryClient.invalidateQueries({queryKey: ["tasks"]})
   })
+}
+
+export function useUpdateTasksPositions(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      updates,
+      optimisticTasks,
+    }: {
+      updates: { id: string; columnId: string; position: number }[];
+      optimisticTasks: Task[];
+    }) => {
+      return updateTasksPositions(updates);
+    },
+
+    onMutate: async ({
+      optimisticTasks,
+    }) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks", workspaceId] });
+
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks", workspaceId]);
+
+      queryClient.setQueryData(["tasks", workspaceId], optimisticTasks);
+
+      return { previousTasks };
+    },
+
+    onError: (err, variables, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(["tasks", workspaceId], context.previousTasks);
+      }
+    }
+  });
 }

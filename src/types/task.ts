@@ -6,6 +6,7 @@ export type Task = {
   description?: string | null;
   dueDate?: string | null;
   priority?: Priority
+  position?: number
   columnId: string;
   workspaceId: string;
   createdAt?: string | null;

@@ -5,10 +5,10 @@ import {TaskSchemaValues} from "@/schemas/tasks"
 import {Task} from "@/types"
 import {mapTask} from "@/mappings"
 
-export async function getTasks(columnId: string, workspaceId: string): Promise<Task[]> {
+export async function getTasks( workspaceId: string): Promise<Task[]> {
   const supabase = await createClient()
 
-  const {data, error} = await supabase.from('tasks').select("*").eq("column_id", columnId).eq("workspace_id", workspaceId)
+  const {data, error} = await supabase.from('tasks').select("*").eq("workspace_id", workspaceId)
 
   if (error) throw error
 
@@ -18,18 +18,31 @@ export async function getTasks(columnId: string, workspaceId: string): Promise<T
 export async function createTask(workspaceId: string, data: TaskSchemaValues){
   const supabase = await createClient()
 
-  const { error} = await supabase.from("tasks").insert({
+  const {data: maxData} = await supabase
+  .from("tasks")
+  .select("position")
+  .eq("column_id", data.columnId)
+  .order("position", {ascending: false})
+  .limit(1)
+  .single()
+
+  const newPosition = maxData && maxData.position !== null && maxData.position !== undefined
+    ? maxData.position + 1
+    : 0
+
+  const { error } = await supabase.from("tasks").insert({
     title: data.title,
     column_id: data.columnId,
     description: data.description,
     priority: data.priority,
     due_date: data.dueDate ? data.dueDate.toISOString() : null,
-    workspace_id: workspaceId,})
+    workspace_id: workspaceId,
+  position: newPosition})
 
   if (error) throw error
 }
 
-export async function updateTask(data: TaskSchemaValues, taskId: string) {
+export async function updateTask(data: Partial<Task>, taskId: string) {
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -38,8 +51,9 @@ export async function updateTask(data: TaskSchemaValues, taskId: string) {
       title: data.title,
       description: data.description,
       column_id: data.columnId,
-      due_date: data.dueDate ? data.dueDate.toISOString() : null, 
+      due_date: data.dueDate, 
       priority: data.priority,
+      position: data.position,
     })
     .eq("id", taskId)
 
@@ -67,4 +81,14 @@ export async function updateTaskDueDate(taskId: string, dueDate: Date) {
   const {error} = await supabase.from("tasks").update({due_date: dueDate.toLocaleDateString()}).eq("id", taskId)
 
   if (error) throw error
+}
+
+export async function updateTasksPositions(updates: {id: string; columnId: string, position: number}[]) {
+  const supabase = await createClient();
+
+  for (const {id, position, columnId} of updates) {
+    const {error} = await supabase.from("tasks").update({position, column_id: columnId}).eq("id",id)
+
+    if (error) throw error
+  }
 }

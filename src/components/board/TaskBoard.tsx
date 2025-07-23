@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react"; // ✅ useMemo toevoegen
 import { useColumns } from "@/hooks/useColumns";
 import { useSearchParams } from "next/navigation";
 import { TaskColumn } from "./TaskColumn";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ColumnForm } from "../form/ColumnForm";
 import { Plus } from "lucide-react";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { useTasks } from "@/hooks";
+import { useDragAndDrop } from "@/hooks/useDragAndDrop";
+import { TaskCard } from "./TaskCard";
 
 export function TaskBoard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // ❌ activeTask state weggehaald - zit nu in hook
+
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("workspace") ?? "";
 
@@ -18,110 +24,128 @@ export function TaskBoard() {
     isLoading: columnsLoading,
     isError: columnsError,
   } = useColumns(workspaceId);
+  const { data: tasks = [] } = useTasks(workspaceId);
 
-  // Loading state
+  // ✅ Krijg activeTask direct van de hook
+  const {
+    handleDragEnd,
+    handleDragStart,
+    handleDragOver,
+    displayTasks,
+    activeTask,
+  } = useDragAndDrop({ tasks, workspaceId });
+
+  const tasksByColumn = useMemo(() => {
+    return displayTasks.reduce((acc, task) => {
+      if (!acc[task.columnId]) {
+        acc[task.columnId] = [];
+      }
+      acc[task.columnId].push(task);
+      return acc;
+    }, {} as Record<string, typeof displayTasks>);
+  }, [displayTasks]);
+
   if (columnsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Workspace laden...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  // Error state
   if (columnsError) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-destructive mb-2">
-            Oeps, er ging iets mis bij het ophalen van de data.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Probeer het opnieuw of wissel van workspace.
-          </p>
-        </div>
+        <p className="text-destructive">Er ging iets mis bij het laden.</p>
       </div>
     );
   }
 
-  // No workspace selected
   if (!workspaceId) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-2">
-            Geen workspace geselecteerd
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Selecteer een workspace uit de sidebar.
-          </p>
-        </div>
+        <p className="text-muted-foreground">
+          Selecteer een workspace uit de sidebar.
+        </p>
       </div>
     );
   }
 
-  // No columns in workspace
+  // ✅ Eerste kolom dialog direct inline
   if (!columns || columns.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">
-            Geen kolommen in deze workspace
-          </p>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <button className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-                <Plus className="h-4 w-4" />
-                Eerste kolom toevoegen
-              </button>
-            </DialogTrigger>
-            <DialogContent>
-              <ColumnForm
-                workspaceId={workspaceId}
-                closeDialog={() => setIsDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <button className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+              <Plus className="h-4 w-4" />
+              Eerste kolom toevoegen
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <ColumnForm
+              workspaceId={workspaceId}
+              closeDialog={() => setIsDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <div className="flex h-full flex-col gap-4 lg:flex-row lg:overflow-x-auto">
-        {columns.map((column) => (
-          <TaskColumn
-            key={column.id}
-            column={column}
+    <DndContext
+      onDragStart={handleDragStart} // ✅ Direct van hook
+      onDragEnd={handleDragEnd} // ✅ Direct van hook
+      onDragOver={handleDragOver}
+    >
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <div className="flex h-full flex-col gap-4 lg:flex-row lg:overflow-x-auto">
+          {columns.map((column) => (
+            <TaskColumn
+              key={column.id}
+              column={column}
+              tasks={tasksByColumn[column.id] || []}
+              workspaceId={workspaceId}
+              activeTaskId={activeTask?.id}
+            />
+          ))}
+
+          <DialogTrigger asChild>
+            <div className="flex h-fit min-h-[200px] flex-shrink-0 flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/10 p-6 text-center transition-all duration-200 hover:border-muted-foreground/40 hover:bg-muted/20 hover:shadow-sm lg:w-64 cursor-pointer">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Plus className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-foreground">Nieuwe kolom</h3>
+                <p className="text-sm text-muted-foreground">
+                  Voeg een kolom toe aan je board
+                </p>
+              </div>
+            </div>
+          </DialogTrigger>
+        </div>
+
+        <DialogContent>
+          <ColumnForm
             workspaceId={workspaceId}
+            closeDialog={() => setIsDialogOpen(false)}
           />
-        ))}
+        </DialogContent>
+      </Dialog>
 
-        <DialogTrigger asChild>
-          <div className="flex h-fit min-h-[200px] flex-shrink-0 flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/10 p-6 text-center transition-all duration-200 hover:border-muted-foreground/40 hover:bg-muted/20 hover:shadow-sm lg:w-64 cursor-pointer">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Plus className="h-5 w-5" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-medium text-foreground">Nieuwe kolom</h3>
-              <p className="text-sm text-muted-foreground">
-                Voeg een kolom toe aan je board
-              </p>
-            </div>
+      <DragOverlay dropAnimation={null}>
+        {activeTask ? (
+          <div className="rotate-12 scale-105 shadow-2xl">
+            <TaskCard
+              task={activeTask}
+              workspaceId={workspaceId}
+              columnId={activeTask.columnId}
+              index={0}
+            />
           </div>
-        </DialogTrigger>
-      </div>
-
-      <DialogContent>
-        <ColumnForm
-          workspaceId={workspaceId}
-          closeDialog={() => setIsDialogOpen(false)}
-        />
-      </DialogContent>
-    </Dialog>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

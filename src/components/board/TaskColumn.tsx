@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useTasks } from "@/hooks/useTasks";
-import { useUpdateColumn, useDeleteColumn } from "@/hooks/useColumns";
+import { useDeleteColumn } from "@/hooks/useColumns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { TaskCard } from "./TaskCard";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -28,20 +26,39 @@ import {
 import { ColumnForm } from "@/components/form/ColumnForm";
 import { Ellipsis, Settings, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Column } from "@/types";
+import type { Column, Task } from "@/types";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
+import { TaskCard } from "./TaskCard"; //
 
 interface TaskColumnProps {
   column: Column;
   workspaceId: string;
+  tasks: Task[];
+  activeTaskId?: string;
 }
 
-export function TaskColumn({ column, workspaceId }: TaskColumnProps) {
+export function TaskColumn({
+  column,
+  workspaceId,
+  tasks,
+  activeTaskId,
+}: TaskColumnProps) {
   const [isColumnFormOpen, setIsColumnFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const { data: tasks = [] } = useTasks(column.id, workspaceId);
-  const { mutate: updateColumn } = useUpdateColumn();
   const { mutate: deleteColumn, isPending: isDeleting } = useDeleteColumn();
+
+  const { setNodeRef: setColumnRef, isOver: isColumnOver } = useDroppable({
+    id: column.id,
+    data: {
+      columnId: column.id,
+      type: "Column",
+    },
+  });
 
   const handleEditColumn = () => {
     setIsColumnFormOpen(true);
@@ -68,14 +85,19 @@ export function TaskColumn({ column, workspaceId }: TaskColumnProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 lg:w-64 flex-shrink-0">
+    <div
+      ref={setColumnRef}
+      className={cn(
+        "flex flex-col gap-4 lg:w-64 flex-shrink-0 min-h-[300px]",
+        isColumnOver && tasks.length === 0 && "ring-2 ring-primary/50"
+      )}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="font-bold">{column.title}</h2>
           <Badge variant="secondary">{tasks.length}</Badge>
         </div>
 
-        {/* Dropdown Menu voor kolom bewerken/verwijderen */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -104,11 +126,45 @@ export function TaskColumn({ column, workspaceId }: TaskColumnProps) {
 
       <Separator className={cn("border-t-2", column.border)} />
 
-      {tasks.map((task) => (
-        <TaskCard key={task.id} task={task} workspaceId={workspaceId} />
-      ))}
+      <SortableContext
+        id={column.id}
+        items={tasks.map((task) => task.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="flex flex-col gap-4">
+          {tasks.map((task, index) => (
+            <div
+              key={task.id}
+              className={cn(
+                "transition-opacity duration-200",
+                task.id === activeTaskId && "opacity-30"
+              )}
+            >
+              <TaskCard
+                task={task}
+                index={index}
+                columnId={column.id}
+                workspaceId={workspaceId}
+              />
+            </div>
+          ))}
 
-      {/* Column Form Dialog */}
+          {/* Lege kolom state */}
+          {tasks.length === 0 && (
+            <div
+              className={cn(
+                "flex items-center justify-center p-12 text-muted-foreground/40 text-sm rounded-lg transition-all",
+                isColumnOver &&
+                  "bg-primary/5 border border-dashed border-primary/30"
+              )}
+            >
+              Geen taken
+            </div>
+          )}
+        </div>
+      </SortableContext>
+
+      {/* Dialogs blijven hetzelfde... */}
       <Dialog open={isColumnFormOpen} onOpenChange={closeColumnForm}>
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
           <ColumnForm
@@ -119,7 +175,6 @@ export function TaskColumn({ column, workspaceId }: TaskColumnProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={closeDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -109,3 +109,11 @@ export function getColumnColorByDisplayName(displayName: string) {
     border: color.border,
   };
 }
+
+
+export function getWorkspaceTextColorByBg(colorBg: string) {
+  const color = COLORS.find(color => color.colorBg === colorBg)
+  if (!color) return "text-gray-500"
+
+  return color.colorText
+}
