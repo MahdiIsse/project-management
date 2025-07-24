@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Form,
@@ -26,21 +25,20 @@ import { useCreateTag } from "@/hooks/tag/useTags";
 import type { Tag } from "@/types";
 
 const tagCreateSchema = z.object({
-  name: z.string().min(2, "Tag naam moet minstens 2 karakters hebben"),
   colorSelection: z.string().min(1, "Selecteer een kleur"),
 });
 
 type TagCreateValues = z.infer<typeof tagCreateSchema>;
 
 interface TagCreateFormProps {
-  onSuccess?: (newTag: Tag) => void; // ✅ Nu met nieuwe tag data!
-  initialName?: string;
+  onSuccess?: (newTag: Tag) => void;
+  initialName: string; // ✅ Nu required - naam is al bekend
   className?: string;
 }
 
 export function TagCreateForm({
   onSuccess,
-  initialName = "",
+  initialName,
   className,
 }: TagCreateFormProps) {
   const [selectedColor, setSelectedColor] = useState<TagColorInternalName | "">(
@@ -51,7 +49,6 @@ export function TagCreateForm({
   const form = useForm<TagCreateValues>({
     resolver: zodResolver(tagCreateSchema),
     defaultValues: {
-      name: initialName,
       colorSelection: "",
     },
   });
@@ -59,7 +56,6 @@ export function TagCreateForm({
   const selectedColorData = selectedColor
     ? getTagColorByName(selectedColor)
     : null;
-  const watchedName = form.watch("name");
 
   const onSubmit = (data: TagCreateValues) => {
     const colorData = getTagColorByName(
@@ -68,7 +64,7 @@ export function TagCreateForm({
     if (!colorData) return;
 
     const tagData = {
-      name: data.name,
+      name: initialName, // ✅ Gebruik de voorgedefinieerde naam
       colorName: colorData.colorName,
       colorText: colorData.colorText,
       colorBg: colorData.colorBg,
@@ -76,10 +72,9 @@ export function TagCreateForm({
 
     createTag(tagData, {
       onSuccess: (newTag) => {
-        // ✅ Nu is newTag van type Tag!
         form.reset();
         setSelectedColor("");
-        onSuccess?.(newTag); // ✅ Geen fallback nodig
+        onSuccess?.(newTag);
       },
     });
   };
@@ -87,36 +82,27 @@ export function TagCreateForm({
   return (
     <div className={cn("border-t bg-muted/30", className)}>
       <div className="p-4 space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <Palette className="h-4 w-4 text-muted-foreground" />
-          <h4 className="text-sm font-medium">Nieuwe tag maken</h4>
+        {/* ✅ Simplified header met naam */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Palette className="h-4 w-4 text-muted-foreground" />
+            <h4 className="text-sm font-medium">Kleur kiezen voor</h4>
+          </div>
+
+          {/* ✅ Toon de naam als badge */}
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {initialName}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              → Kies een kleur
+            </span>
+          </div>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Tag Name Field */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs font-medium text-muted-foreground">
-                    Tag naam
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Bijvoorbeeld: Bug, Feature, Design..."
-                      className="h-8"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Color Picker Field */}
+            {/* ✅ Alleen Color Picker - geen naam input */}
             <FormField
               control={form.control}
               name="colorSelection"
@@ -157,8 +143,8 @@ export function TagCreateForm({
               )}
             />
 
-            {/* Live Preview */}
-            {selectedColorData && watchedName.trim() && (
+            {/* ✅ Live Preview */}
+            {selectedColorData && (
               <div className="space-y-2">
                 <FormLabel className="text-xs font-medium text-muted-foreground">
                   Voorbeeld
@@ -171,7 +157,7 @@ export function TagCreateForm({
                       "transition-all"
                     )}
                   >
-                    {watchedName}
+                    {initialName}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     {selectedColorData.colorName}
@@ -180,12 +166,12 @@ export function TagCreateForm({
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* ✅ Submit Button */}
             <Button
               type="submit"
               size="sm"
               className="w-full h-8"
-              disabled={isPending || !selectedColor || !watchedName.trim()}
+              disabled={isPending || !selectedColor}
             >
               <Plus className="h-3 w-3 mr-1" />
               {isPending ? "Tag maken..." : "Tag maken & toewijzen"}

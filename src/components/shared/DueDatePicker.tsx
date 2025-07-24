@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -22,13 +24,15 @@ export function DueDatePicker({
   onDateChange,
   variant = "default",
 }: DueDatePickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   const isOverdue =
     currentDate &&
     isPast(new Date(currentDate)) &&
     !isToday(new Date(currentDate));
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <div
           className={cn(
@@ -54,6 +58,7 @@ export function DueDatePicker({
           onSelect={(date) => {
             if (date) {
               onDateChange(date);
+              setIsOpen(false);
             }
           }}
         />

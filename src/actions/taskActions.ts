@@ -67,21 +67,7 @@ export async function deleteTask(taskId: string) {
   if (error) throw error
 }
 
-export async function updateTaskPriority(taskId: string, priority: "Low" | "Medium" | "High") {
-  const supabase = await createClient()
 
-  const {error} = await supabase.from("tasks").update({priority}).eq("id", taskId)
-
-  if (error) throw error
-}
-
-export async function updateTaskDueDate(taskId: string, dueDate: Date) {
-  const supabase = await createClient()
-
-  const {error} = await supabase.from("tasks").update({due_date: dueDate.toLocaleDateString()}).eq("id", taskId)
-
-  if (error) throw error
-}
 
 export async function updateTasksPositions(updates: {id: string; columnId: string, position: number}[]) {
   const supabase = await createClient();

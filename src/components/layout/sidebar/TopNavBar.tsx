@@ -12,7 +12,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 export default function TopNavBar() {
   return (
     <header>
-      <div className="flex items-center gap-2 px-4">
+      <div className="flex items-center gap-2 p-6">
         <SidebarTrigger className="-ml-1" />
         <Separator
           orientation="vertical"

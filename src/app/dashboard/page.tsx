@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { TaskBoard } from "@/components/board/TaskBoard";
+import { TaskListView } from "@/components/list/TaskListView";
 
 type ViewMode = "list" | "board" | "calendar";
 
@@ -45,9 +46,8 @@ export default function DashboardPage() {
         </div>
       )}
       {currentView === "list" && (
-        <div className="text-center py-12 text-muted-foreground">
-          <h2 className="text-xl font-semibold mb-2">Lijst Weergave</h2>
-          <p>Coming soon...</p>
+        <div className="space-y-6">
+          <TaskListView />
         </div>
       )}
       {currentView === "calendar" && (

@@ -6,10 +6,7 @@ import { SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { TaskForm } from "../form/TaskForm";
-import {
-  useUpdateTaskPriority,
-  useUpdateTaskDueDate,
-} from "@/hooks/task/useTasks";
+import { useUpdateTask } from "@/hooks/task/useTasks";
 import { PrioritySelector } from "../shared/PrioritySelector";
 import { DueDatePicker } from "../shared/DueDatePicker";
 import { AssigneeSelector } from "../shared/AssigneeSelector";
@@ -35,8 +32,7 @@ export function TaskCard({
   index,
 }: TaskCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { mutate: updateTaskPriority } = useUpdateTaskPriority();
-  const { mutate: updateTaskDueDate } = useUpdateTaskDueDate();
+  const { mutate: updateTask } = useUpdateTask();
 
   // ✅ useSortable hook van SortableTaskCard
   const {
@@ -127,14 +123,17 @@ export function TaskCard({
           <PrioritySelector
             currentPriority={task.priority}
             onPriorityChange={(priority) =>
-              updateTaskPriority({ taskId: task.id, priority })
+              updateTask({ data: { priority }, taskId: task.id })
             }
           />
 
           <DueDatePicker
             currentDate={task.dueDate}
             onDateChange={(date) =>
-              updateTaskDueDate({ taskId: task.id, dueDate: date })
+              updateTask({
+                data: { dueDate: date.toDateString() },
+                taskId: task.id,
+              })
             }
           />
         </div>

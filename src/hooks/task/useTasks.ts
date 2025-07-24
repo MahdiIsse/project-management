@@ -1,5 +1,5 @@
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query"
-import {getTasks, createTask, updateTask, deleteTask, updateTaskPriority, updateTaskDueDate, updateTasksPositions} from "@/actions/taskActions"
+import {getTasks, createTask, updateTask, deleteTask,  updateTasksPositions} from "@/actions/taskActions"
 import {TaskSchemaValues} from "@/schemas/tasks"
 import type {Task} from "@/types"
 
@@ -40,28 +40,6 @@ export function useDeleteTask(){
       return deleteTask(id)
     },
     onSuccess: ()=> queryClient.invalidateQueries({queryKey: ["tasks"]})
-  })
-}
-
-export function useUpdateTaskPriority(){
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({ taskId, priority }: { taskId: string, priority: "Low" | "Medium" | "High" }) => {
-      return updateTaskPriority(taskId, priority)
-    },
-    onSuccess: () => queryClient.invalidateQueries({queryKey: ["tasks"]})
-  })
-}
-
-export function useUpdateTaskDueDate(){
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async({taskId, dueDate}: {taskId: string, dueDate: Date}) => {
-      return updateTaskDueDate(taskId, dueDate)
-    },
-    onSuccess: () => queryClient.invalidateQueries({queryKey: ["tasks"]})
   })
 }
 
