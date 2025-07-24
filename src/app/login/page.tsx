@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { GalleryVerticalEnd } from "lucide-react";
 
-import { LoginForm } from "@/components/form/LoginForm";
+import { LoginForm } from "@/features/auth/components/LoginForm";
 
 export default function LoginPage() {
   return (
