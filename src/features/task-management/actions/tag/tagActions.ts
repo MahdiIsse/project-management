@@ -6,8 +6,12 @@ import {createServerClient} from "@/shared/lib/supabase/server"
 
 export async function getTags(): Promise<Tag[]> {
   const supabase = await createServerClient()
+  const user = await getAuthenticatedUser()
 
-  const {data, error} = await supabase.from("tags").select("*")
+  const {data, error} = await supabase
+    .from("tags")
+    .select("*")
+    .eq("owner_id", user.id)
 
   if (error) throw error
 

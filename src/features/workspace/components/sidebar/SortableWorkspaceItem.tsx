@@ -3,7 +3,7 @@
 import {
   GripVertical,
   MoreHorizontal,
-  Edit,
+  Settings,
   Trash2,
   CircleDot,
 } from "lucide-react";
@@ -17,9 +17,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  cn,
+  getWorkspaceColor,
 } from "@/shared";
-import { getWorkspaceTextColorByBg, cn } from "@/shared";
+
 import { Workspace } from "@/features/workspace";
+import {
+  WORKSPACE_COLORS,
+  getWorkspaceColorProps,
+} from "@/features/workspace/utils/workspace-colors";
 
 interface SortableWorkspaceItemProps {
   workspace: Workspace;
@@ -56,51 +63,42 @@ export function SortableWorkspaceItem({
     transition,
   };
 
-  return (
-    <SidebarMenuItem ref={setNodeRef} style={style}>
-      <div
-        className={cn(
-          "flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center",
-          isDragging ? "opacity-50" : ""
-        )}
-      >
-        <div className="flex items-center flex-1 min-w-0 group-data-[collapsible=icon]:flex-none">
-          <button
-            className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing group-data-[collapsible=icon]:hidden"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="h-3 w-3" />
-          </button>
+  const isActive = currentWorkspace === workspace.id;
+  const colors = getWorkspaceColorProps(workspace.color);
 
-          <SidebarMenuButton
-            asChild
-            isActive={currentWorkspace === workspace.id}
-            className={cn(
-              "flex-1 h-9 px-3 text-sm font-medium transition-colors ml-1 group-data-[collapsible=icon]:ml-0 group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center",
-              currentWorkspace === workspace.id
-                ? "bg-accent/40 text-accent-foreground border border-border/30"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-            )}
-          >
-            <button onClick={() => onWorkspaceChange(workspace.id)}>
-              <CircleDot
-                className={cn(
-                  "h-3 w-3 shrink-0 mr-2 group-data-[collapsible=icon]:mr-0 group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:w-4",
-                  getWorkspaceTextColorByBg(workspace.color || "")
-                )}
-              />
-              <span className="truncate group-data-[collapsible=icon]:hidden">
-                {workspace.title}
-              </span>
-            </button>
-          </SidebarMenuButton>
-        </div>
+  return (
+    <SidebarMenuItem
+      ref={setNodeRef}
+      style={style}
+      className={cn(isDragging ? "opacity-50" : "")}
+    >
+      <SidebarMenuButton
+        className={cn(
+          "h-9 px-3 text-sm font-medium transition-colors group w-full justify-start",
+          isActive
+            ? "bg-accent/40 text-accent-foreground"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+        )}
+        onClick={() => onWorkspaceChange(workspace.id)}
+      >
+        <button
+          className="h-6 w-6 flex items-center justify-center text-muted-foreground/50 hover:text-muted-foreground cursor-grab active:cursor-grabbing -ml-2 shrink-0"
+          {...attributes}
+          {...listeners}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <CircleDot className={cn("h-4 w-4 shrink-0", colors.icon)} />
+        <span className="truncate flex-grow text-left">{workspace.title}</span>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="h-6 w-6 flex items-center justify-center rounded-md hover:bg-accent/30 transition-colors text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:hidden">
-              <MoreHorizontal className="h-3 w-3" />
+            <button
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent/50 rounded ml-auto shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-4 w-4" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -108,7 +106,7 @@ export function SortableWorkspaceItem({
               onClick={() => onEditWorkspace(workspace)}
               className="cursor-pointer"
             >
-              <Edit className="h-4 w-4 mr-2" />
+              <Settings className="h-4 w-4 mr-2" />
               Bewerken
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -120,7 +118,7 @@ export function SortableWorkspaceItem({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </SidebarMenuButton>
     </SidebarMenuItem>
   );
 }

@@ -1,8 +1,4 @@
-export * from "./AppSidebar"
-export * from "./nav-main"
+export * from "./SidebarContainer"
 export * from "./nav-user"
 export * from "./SortableWorkspaceItem"
-export * from "./team-switcher"
-export * from "./TopNavBar"
-export * from "./Workspaces"
-export * from "./WorkspacesList"
+

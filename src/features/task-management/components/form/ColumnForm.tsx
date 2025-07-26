@@ -124,9 +124,9 @@ export function ColumnForm({
                         <div className="flex items-center gap-3">
                           <div
                             className={cn(
-                              "w-4 h-4 rounded-full border-2",
-                              selectedColor?.colorBg ||
-                                "bg-gray-200 border-gray-300"
+                              "w-4 h-4 rounded-full border",
+                              selectedColor?.columnBg,
+                              selectedColor?.border
                             )}
                           />
                           <span className="font-normal">
@@ -147,12 +147,13 @@ export function ColumnForm({
                             key={color.name}
                             type="button"
                             className={cn(
-                              "w-8 h-8 rounded-full border-2 border-transparent",
+                              "w-8 h-8 rounded-full border-2",
                               "hover:border-gray-400 transition-colors",
                               "focus:outline-none focus:border-gray-600",
-                              color.colorBg,
-                              field.value === color.border &&
-                                "ring-2 ring-offset-2 ring-gray-400"
+                              color.columnBg,
+                              field.value === color.border
+                                ? color.border
+                                : "border-transparent"
                             )}
                             onClick={() => {
                               field.onChange(color.border);

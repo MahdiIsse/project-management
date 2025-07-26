@@ -7,8 +7,13 @@ import { mapWorkspace } from "@/features/workspace";
 
 export async function getWorkspaces(): Promise<Workspace[]> {
   const supabase = await createServerClient()
+  const user = await getAuthenticatedUser()
 
-  const {data, error} = await supabase.from("workspaces").select("*").order("position", {ascending: true})
+  const {data, error} = await supabase
+    .from("workspaces")
+    .select("*")
+    .eq("owner_id", user.id)
+    .order("position", {ascending: true})
 
   if (error) throw error
   return (data || []).map(mapWorkspace)

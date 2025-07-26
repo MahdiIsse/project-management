@@ -65,9 +65,6 @@ export function useDashboardHeader({
     (ws) => ws.id === currentWorkspaceId
   );
 
-  const maxVisibleAssignees = 3;
-  const visibleAssignees = assignees.slice(0, maxVisibleAssignees);
-  const remainingCount = assignees.length - maxVisibleAssignees;
 
   return {
     isDialogOpen,
@@ -77,8 +74,6 @@ export function useDashboardHeader({
     currentWorkspaceId,
     assignees,
     activeWorkspace,
-    visibleAssignees,
-    remainingCount,
     activeFilterCount,
     handleAssigneeChange,
     handlePriorityChange,

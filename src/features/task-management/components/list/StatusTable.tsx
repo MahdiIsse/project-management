@@ -3,46 +3,61 @@
 import { useState } from "react";
 import { Task, Column } from "@/features/task-management/types";
 import {
-  Collapsible,
-  CollapsibleContent,
   Table,
   TableBody,
   TableHead,
   TableHeader,
   TableRow,
   Checkbox,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
   Dialog,
   DialogContent,
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
 } from "@/shared";
-import { TaskForm } from "@/features/task-management";
-import { TaskTableRow } from "@/features/task-management/components/list/TaskTableRow";
-import { StatusTableHeader } from "@/features/task-management/components/list/StatusTableHeader";
+import {
+  GripVertical,
+  ChevronDown,
+  Ellipsis,
+  Settings,
+  Trash2,
+} from "lucide-react";
+import { TaskForm, ColumnForm } from "@/features/task-management";
+import { TaskTableRow } from "./TaskTableRow";
+import { useDeleteColumn } from "@/features/task-management/hooks";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/shared";
+import { getColumnColorsByBorder } from "@/shared/lib/utils/colors";
+import { DeleteConfirmDialog } from "../shared";
 
 interface StatusTableProps {
-  status: string;
   tasks: Task[];
-  statusColor: string;
+  column: Column;
+  workspaceId: string;
   onTaskSelect?: (taskIds: string[]) => void;
   selectedTasks?: string[];
-  workspaceId: string;
-  column: Column;
 }
 
 export function StatusTable({
-  status,
   tasks,
-  statusColor,
+  column,
+  workspaceId,
   onTaskSelect,
   selectedTasks = [],
-  workspaceId,
-  column,
 }: StatusTableProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isColumnFormOpen, setIsColumnFormOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
+
+  const { mutate: deleteColumn } = useDeleteColumn();
 
   const {
     attributes,
@@ -51,134 +66,193 @@ export function StatusTable({
     transform,
     transition,
     isDragging,
-  } = useSortable({
-    id: column.id,
-    data: {
-      type: "Column",
-      column,
-    },
-  });
+  } = useSortable({ id: column.id, data: { type: "Column", column } });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  // Checkbox handlers
+  // 🚀 NIEUW: Kleuren ophalen met de helper
+  const { columnBg, columnText } = getColumnColorsByBorder(column.border);
+
+  const handleTaskNameClick = (task: Task) => setTaskToEdit(task);
+
   const handleSelectAll = (checked: boolean) => {
     const taskIds = tasks.map((task) => task.id);
-    if (checked) {
-      onTaskSelect?.([...selectedTasks, ...taskIds]);
-    } else {
-      onTaskSelect?.(selectedTasks.filter((id) => !taskIds.includes(id)));
-    }
+    const selectedTaskIdsSet = new Set(selectedTasks);
+    taskIds.forEach((id) =>
+      checked ? selectedTaskIdsSet.add(id) : selectedTaskIdsSet.delete(id)
+    );
+    onTaskSelect?.(Array.from(selectedTaskIdsSet));
   };
 
   const handleTaskSelect = (taskId: string, checked: boolean) => {
-    if (checked) {
-      onTaskSelect?.([...selectedTasks, taskId]);
-    } else {
-      onTaskSelect?.(selectedTasks.filter((id) => id !== taskId));
-    }
+    const newSelected = new Set(selectedTasks);
+    if (checked) newSelected.add(taskId);
+    else newSelected.delete(taskId);
+    onTaskSelect?.(Array.from(newSelected));
   };
 
-  const handleTaskNameClick = (task: Task) => {
-    setTaskToEdit(task);
-    setIsTaskFormOpen(true);
+  const confirmDeleteColumn = () => {
+    deleteColumn(column.id, {
+      onSuccess: () => setIsDeleteConfirmOpen(false),
+    });
   };
 
-  const handleTaskFormSuccess = () => {
-    setIsTaskFormOpen(false);
-    setTaskToEdit(null);
-  };
-
-  // Checkbox states
-  const allTaskIds = tasks.map((task) => task.id);
-  const selectedTaskIds = selectedTasks.filter((id) => allTaskIds.includes(id));
+  const allTaskIdsInThisColumn = tasks.map((t) => t.id);
+  const selectedTasksInThisColumn = selectedTasks.filter((id) =>
+    allTaskIdsInThisColumn.includes(id)
+  );
   const isAllSelected =
-    tasks.length > 0 && selectedTaskIds.length === tasks.length;
-  const isIndeterminate =
-    selectedTaskIds.length > 0 && selectedTaskIds.length < tasks.length;
+    tasks.length > 0 && selectedTasksInThisColumn.length === tasks.length;
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "mb-6",
-        isDragging && "opacity-50 scale-[0.98] shadow-lg z-50"
-      )}
-    >
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        {/* ✅ Vervangen door StatusTableHeader */}
-        <StatusTableHeader
-          column={column}
-          status={status}
-          statusColor={statusColor}
-          taskCount={tasks.length}
-          workspaceId={workspaceId}
-          isExpanded={isExpanded}
-          onExpandedChange={setIsExpanded}
-          dragAttributes={attributes}
-          dragListeners={listeners}
-          isDragging={isDragging}
-        />
-
-        <CollapsibleContent>
-          <div className="mt-2 border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={isAllSelected}
-                        onCheckedChange={handleSelectAll}
-                      />
-                      {isIndeterminate && (
-                        <span className="text-xs text-muted-foreground">
-                          ({selectedTaskIds.length}/{tasks.length})
+    <>
+      {/* 1. De "Frame" container */}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          "rounded-lg overflow-hidden border bg-background",
+          isDragging && "opacity-50 scale-[0.98] shadow-lg z-50"
+        )}
+      >
+        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+          <Table>
+            <TableHeader>
+              {/* 2. De Gekleurde, Klikbare Header */}
+              <CollapsibleTrigger asChild>
+                <TableRow className={cn("hover:bg-opacity-90", columnBg)}>
+                  <TableHead colSpan={7} className="p-0 cursor-pointer">
+                    <div className="flex items-center justify-between p-2">
+                      <div
+                        className={cn("flex items-center gap-3", columnText)}
+                      >
+                        <span
+                          className="cursor-grab active:cursor-grabbing p-2"
+                          {...attributes}
+                          {...listeners}
+                          onClick={(e) => e.stopPropagation()} // Voorkom inklappen bij drag
+                        >
+                          <GripVertical className="h-4 w-4" />
                         </span>
-                      )}
+                        <ChevronDown
+                          className={cn(
+                            "w-4 h-4 transition-transform",
+                            !isExpanded && "-rotate-90"
+                          )}
+                        />
+                        <span className="font-semibold">{column.title}</span>
+                        <span className="text-sm opacity-70">
+                          {tasks.length}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Ellipsis className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsColumnFormOpen(true);
+                              }}
+                            >
+                              <Settings className="h-4 w-4 mr-2" />
+                              Kolom bewerken
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsDeleteConfirmOpen(true);
+                              }}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Kolom verwijderen
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </TableHead>
-                  <TableHead className="w-64">TASK</TableHead>
-                  <TableHead className="w-32">CREATED</TableHead>
-                  <TableHead className="w-40">DUE</TableHead>
-                  <TableHead className="w-24">PRIORITY</TableHead>
-                  <TableHead className="w-32">ASSIGNEE</TableHead>
-                  <TableHead className="w-40">TAGS</TableHead>
                 </TableRow>
-              </TableHeader>
+              </CollapsibleTrigger>
+              {/* 3. De Kolomtitels */}
+              <TableRow className="border-b bg-muted/30 text-xs uppercase hover:bg-muted/40">
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
+                <TableHead className="w-64">Task</TableHead>
+                <TableHead className="w-32">Created</TableHead>
+                <TableHead className="w-40">Due</TableHead>
+                <TableHead className="w-24">Priority</TableHead>
+                <TableHead className="w-32">Assignee</TableHead>
+                <TableHead>Tags</TableHead>
+              </TableRow>
+            </TableHeader>
+            {/* 4. De Inklapbare Content */}
+            <CollapsibleContent asChild>
               <TableBody>
                 {tasks.map((task) => (
                   <TaskTableRow
                     key={task.id}
                     task={task}
-                    workspaceId={workspaceId}
                     isSelected={selectedTasks.includes(task.id)}
                     onSelect={handleTaskSelect}
                     onEdit={handleTaskNameClick}
                   />
                 ))}
               </TableBody>
-            </Table>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+            </CollapsibleContent>
+          </Table>
+        </Collapsible>
+      </div>
 
-      {/* Task Form Dialog */}
-      <Dialog open={isTaskFormOpen} onOpenChange={setIsTaskFormOpen}>
-        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+      {/* Dialogs blijven hier, buiten de tabel */}
+      <Dialog open={isColumnFormOpen} onOpenChange={setIsColumnFormOpen}>
+        <DialogContent>
+          <ColumnForm
+            workspaceId={workspaceId}
+            columnToEdit={column}
+            closeDialog={() => setIsColumnFormOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={!!taskToEdit}
+        onOpenChange={(open) => !open && setTaskToEdit(null)}
+      >
+        <DialogContent>
           {taskToEdit && (
             <TaskForm
               workspaceId={workspaceId}
               taskToEdit={taskToEdit}
-              closeDialog={handleTaskFormSuccess}
+              closeDialog={() => setTaskToEdit(null)}
             />
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      <DeleteConfirmDialog
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={confirmDeleteColumn}
+        itemType="kolom"
+        itemName={column.title}
+      />
+    </>
   );
 }

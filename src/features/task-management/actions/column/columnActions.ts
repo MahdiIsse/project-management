@@ -6,15 +6,38 @@ import {createServerClient} from "@/shared/lib/supabase/server"
 export async function getColumns(workspaceId: string): Promise<Column[]> {
 const supabase = await createServerClient();
 
-const {data, error} = await supabase.from("columns").select("*").eq("workspace_id", workspaceId)
+const {data, error} = await supabase
+  .from("columns")
+  .select("*")
+  .eq("workspace_id", workspaceId)
+  .order("position", {ascending: true})
 if (error) throw error
 return (data || []).map(mapColumn)
 }
 
-export async function createColumn(id: string, data: ColumnSchemaValues) {
+export async function createColumn(workspaceId: string, data: ColumnSchemaValues) {
   const supabase = await createServerClient()
 
-  const { error} = await supabase.from("columns").insert({...data, workspace_id: id })
+  const {data: maxData} = await supabase
+  .from("columns")
+  .select("position")
+  .eq("workspace_id", workspaceId)
+  .order("position", {ascending: false})
+  .limit(1)
+  .single()
+
+  const newPosition = maxData && maxData.position !== null && maxData.position !== undefined
+    ? maxData.position + 1
+    : 0
+
+  const { error} = await supabase
+    .from("columns")
+    .insert({
+      title: data.title,
+      border: data.border,
+      position: newPosition,      
+      workspace_id: workspaceId })
+
   if (error) throw error
 }
 

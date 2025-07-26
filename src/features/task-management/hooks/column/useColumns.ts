@@ -12,7 +12,8 @@ import { Column } from "@/features/task-management/types";
 export function useColumns(workspaceId: string){
   return useQuery({
     queryKey: ["columns", workspaceId],
-    queryFn: () => getColumns(workspaceId)
+    queryFn: () => getColumns(workspaceId),
+    enabled: !!workspaceId
   })
 }
 

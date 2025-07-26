@@ -2,11 +2,11 @@
 
 import {revalidatePath} from "next/cache"
 import {redirect} from "next/navigation"
-import {createClient} from "@/shared/lib/supabase/server"
-import {LoginSchemaValues} from "@/features/auth/schemas/auth"
+import {createServerClient} from "@/shared/lib/supabase/server"
+import {LoginSchemaValues, SignUpSchemaValues} from "@/features/auth/schemas/auth"
 
 export async function login(data: LoginSchemaValues) {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   const {error} = await supabase.auth.signInWithPassword(data)
 
@@ -15,23 +15,56 @@ export async function login(data: LoginSchemaValues) {
   }
 
   revalidatePath("/", "layout")
-  redirect("/")
+  redirect("/dashboard")
 }
 
-export async function signup(formData: FormData) {
-  const supabase = await createClient()
 
-  const data = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
+export async function signup(data: SignUpSchemaValues) {
+  const supabase = await createServerClient()
+
+  let avatarUrl: string | undefined = undefined;
+
+  if (data.avatarFile && data.avatarFile.size > 0) {
+    const file = data.avatarFile;
+    const fileExtension = file.name.split(".").pop()
+    const filePath = `users/${new Date()}_${fileExtension}`
+  
+
+  const {error: uploadError} = await supabase.storage
+    .from("avatars")
+    .upload(filePath, file)
+
+  if (uploadError) {
+    throw new Error ("Afbeelding mislukt met uploaden")
   }
 
-  const {error} = await supabase.auth.signUp(data)
+  const {data: publicUrlData} = supabase.storage
+    .from("avatars")
+    .getPublicUrl(filePath)
+    avatarUrl = publicUrlData.publicUrl
+
+  }
+
+  const {error} = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: {
+      data: {
+        full_name: data.fullName,
+        avatar_url: avatarUrl
+      }
+    }
+  })
 
   if (error) {
     redirect("/error")
   }
   
   revalidatePath("/", "layout")
-  redirect("/")
+  redirect("/dashboard")
+}
+
+export async function logout(){
+  const supabase = await createServerClient()
+  await supabase.auth.signOut()
 }

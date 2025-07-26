@@ -15,26 +15,39 @@ interface DeleteConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  taskCount: number;
+  itemType: string; // bv. "taak", "assignee", "kolom"
+  itemName?: string; // bv. "Jan Smit" (voor enkelvoud)
+  itemCount?: number; // bv. 5 (voor meervoud)
 }
 
 export function DeleteConfirmDialog({
   isOpen,
   onClose,
   onConfirm,
-  taskCount,
+  itemType,
+  itemName,
+  itemCount,
 }: DeleteConfirmDialogProps) {
+  const isPlural = itemCount !== undefined && itemCount > 1;
+  const title = `Weet je het zeker?`;
+  let description = `Deze actie kan niet ongedaan worden gemaakt. `;
+
+  if (itemName) {
+    description += `Dit zal de ${itemType} '${itemName}' permanent verwijderen.`;
+  } else if (itemCount !== undefined) {
+    description += `Dit zal ${itemCount} ${itemType}${
+      isPlural ? "s" : ""
+    } permanent verwijderen.`;
+  } else {
+    description += `Dit zal de geselecteerde ${itemType} permanent verwijderen.`;
+  }
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            Taak{taskCount > 1 ? "en" : ""} verwijderen
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            Weet je zeker dat je {taskCount} taak{taskCount > 1 ? "en" : ""}{" "}
-            wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Annuleren</AlertDialogCancel>

@@ -12,7 +12,6 @@ import { useUpdateTask } from "@/features/task-management/hooks";
 
 interface TaskTableRowProps {
   task: Task;
-  workspaceId: string;
   isSelected: boolean;
   onSelect: (taskId: string, checked: boolean) => void;
   onEdit: (task: Task) => void;
@@ -20,7 +19,6 @@ interface TaskTableRowProps {
 
 export function TaskTableRow({
   task,
-  workspaceId,
   isSelected,
   onSelect,
   onEdit,
@@ -79,7 +77,7 @@ export function TaskTableRow({
               taskId: task.id,
             })
           }
-          variant="compact"
+          variant="default"
         />
       </TableCell>
 
@@ -88,7 +86,7 @@ export function TaskTableRow({
         <AssigneeSelector
           taskId={task.id}
           maxVisible={2}
-          variant="compact"
+          variant="default"
           assignees={task.assignees}
         />
       </TableCell>

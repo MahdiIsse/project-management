@@ -6,7 +6,8 @@ import type { Task, TaskFilters } from "@/features/task-management/types"
 export function useTasks(workspaceId: string, filters?: TaskFilters){
   return useQuery({
     queryKey: ["tasks", workspaceId, filters],
-    queryFn: ()=> getTasks(workspaceId, filters)
+    queryFn: ()=> getTasks(workspaceId, filters),
+    enabled: !!workspaceId
   })
 }
 
@@ -49,7 +50,6 @@ export function useUpdateTasksPositions(workspaceId: string) {
   return useMutation({
     mutationFn: async ({
       updates,
-      optimisticTasks,
     }: {
       updates: { id: string; columnId: string; position: number }[];
       optimisticTasks: Task[];

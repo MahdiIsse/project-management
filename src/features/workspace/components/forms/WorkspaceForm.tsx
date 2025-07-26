@@ -26,7 +26,10 @@ import {
 } from "@/shared/components/ui/popover";
 import { Input, Button, Textarea } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/utils";
-import { COLORS } from "@/shared/lib/utils";
+import {
+  WORKSPACE_COLORS,
+  getWorkspaceColorProps,
+} from "@/features/workspace/utils/workspace-colors";
 import { Workspace } from "@/features/workspace/types";
 
 interface WorkspaceFormProps {
@@ -50,12 +53,12 @@ export function WorkspaceForm({
         ? {
             title: workspaceToEdit.title,
             description: workspaceToEdit.description || "",
-            color: workspaceToEdit.color || COLORS[0].colorBg,
+            color: workspaceToEdit.color || "Slate",
           }
         : {
             title: "",
             description: "",
-            color: COLORS[0].colorBg,
+            color: "Slate",
           },
   });
 
@@ -118,9 +121,7 @@ export function WorkspaceForm({
           control={form.control}
           name="color"
           render={({ field }) => {
-            const selectedColor = COLORS.find(
-              (color) => color.colorBg === field.value
-            );
+            const selectedColor = getWorkspaceColorProps(field.value);
 
             return (
               <FormItem>
@@ -138,46 +139,42 @@ export function WorkspaceForm({
                         <div className="flex items-center gap-3">
                           <div
                             className={cn(
-                              "w-4 h-4 rounded-full border-2",
-                              selectedColor?.colorBg ||
-                                "bg-gray-200 border-gray-300"
+                              "w-4 h-4 rounded-full",
+                              selectedColor.bg
                             )}
                           />
                           <span className="font-normal">
-                            {selectedColor?.name || "Selecteer een kleur"}
+                            {selectedColor.name}
                           </span>
                         </div>
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-72 p-4">
+                  <PopoverContent className="w-auto p-4">
                     <div className="space-y-3">
                       <div className="text-sm font-medium text-center">
-                        Kies een kleur voor je workspace
+                        Kies een thema voor je workspace
                       </div>
                       <div className="grid grid-cols-5 gap-3">
-                        {COLORS.map((color) => (
+                        {WORKSPACE_COLORS.map((color) => (
                           <button
                             key={color.name}
                             type="button"
                             className={cn(
-                              "w-8 h-8 rounded-full border-2 border-transparent",
-                              "hover:border-gray-400 transition-colors",
-                              "focus:outline-none focus:border-gray-600",
-                              color.colorBg,
-                              field.value === color.colorBg &&
-                                "ring-2 ring-offset-2 ring-gray-400"
+                              "w-8 h-8 rounded-full border-2 transition-all",
+                              "hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring",
+                              color.bg,
+                              field.value === color.name
+                                ? "border-white"
+                                : "border-transparent"
                             )}
                             onClick={() => {
-                              field.onChange(color.colorBg);
+                              field.onChange(color.name);
                               setIsColorPickerOpen(false);
                             }}
                             title={color.name}
                           />
                         ))}
-                      </div>
-                      <div className="text-xs text-muted-foreground text-center">
-                        Klik op een kleur om deze te selecteren
                       </div>
                     </div>
                   </PopoverContent>

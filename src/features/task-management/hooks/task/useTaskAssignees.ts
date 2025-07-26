@@ -1,13 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getTaskAssignees, addAssigneeToTask, removeAssigneeFromTask } from "@/features/task-management/actions"
+import {  useMutation, useQueryClient } from "@tanstack/react-query"
+import {  addAssigneeToTask, removeAssigneeFromTask } from "@/features/task-management/actions"
 
-export function useTaskAssignees(taskId: string){
-  return useQuery({
-    queryKey: ["taskAssignees", taskId],
-    queryFn: () => getTaskAssignees(taskId),
-    enabled: !!taskId
-  })
-}
+
 
 export function useAddAssigneeToTask(){
   const queryClient = useQueryClient()
@@ -16,7 +10,9 @@ export function useAddAssigneeToTask(){
     mutationFn: async ({taskId, assigneeId}: {taskId: string, assigneeId: string}) => {
       return addAssigneeToTask(taskId, assigneeId)
     }, 
-    onSuccess: (data, variables) => queryClient.invalidateQueries({queryKey: ["taskAssignees", variables.taskId]})
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["tasks"]})
+    }
   })
 }
 
@@ -27,6 +23,8 @@ export function useRemoveAssigneeFromTask(){
     mutationFn: async({taskId, assigneeId}: {taskId: string, assigneeId: string}) => {
       return removeAssigneeFromTask(taskId, assigneeId)
     },
-    onSuccess: (data, variables) => queryClient.invalidateQueries({queryKey: ["taskAssignees", variables.taskId]})
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["tasks"]})
+    }
   })
 } 

@@ -73,14 +73,14 @@ export function DashboardContainer() {
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6 space-y-6">
+    <div className="h-full flex flex-col p-6 space-y-6">
       <DashboardHeader
         currentView={currentView}
         onViewChange={setCurrentView}
         filters={filters}
         onFiltersChange={handleFilterChange}
       />
-      <div className="flex-1">{renderView()}</div>
+      <div className="flex-1 overflow-hidden">{renderView()}</div>
     </div>
   );
 }

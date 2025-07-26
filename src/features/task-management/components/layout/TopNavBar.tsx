@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,8 +10,17 @@ import {
 } from "@/shared/components/ui/breadcrumb";
 import { Separator } from "@/shared/components/ui/separator";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
+import { useSearchParams } from "next/navigation";
+import { useWorkspaces } from "@/features/workspace";
 
 export function TopNavBar() {
+  const searchParams = useSearchParams();
+  const workspaceId = searchParams.get("workspace");
+
+  const { data: workspaces } = useWorkspaces();
+
+  const activeWorkspace = workspaces?.find((w) => w.id === workspaceId);
+
   return (
     <header>
       <div className="flex items-center gap-2 p-6">
@@ -21,13 +32,11 @@ export function TopNavBar() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="#">
-                Building Your Application
-              </BreadcrumbLink>
+              <BreadcrumbLink href="#">Workspaces</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+              <BreadcrumbPage>{activeWorkspace?.title}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

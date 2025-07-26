@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { AssigneeSchemaValues } from "@/features/task-management"
 import { getAssignees, createAssignee, updateAssignee, deleteAssignee } from "@/features/task-management"
+import { toast } from "sonner"
 
 export function useAssignees() {
   return useQuery({
@@ -13,8 +13,8 @@ export function useCreateAssignee(){
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({data}: {data: AssigneeSchemaValues}) => {
-      return createAssignee(data)
+    mutationFn: async ({formData}: {formData: FormData}) => {
+      return createAssignee({formData})
     }, 
     onSuccess: () => queryClient.invalidateQueries({queryKey: ["assignees"]})
   })
@@ -24,8 +24,8 @@ export function useUpdateAssignee(){
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({assigneeId, data}: {assigneeId: string, data: AssigneeSchemaValues}) => {
-      return updateAssignee(assigneeId, data)
+    mutationFn: async ({assigneeId, formData}: {assigneeId: string, formData: FormData}) => {
+      return updateAssignee({assigneeId, formData})
     },
     onSuccess: ()=> queryClient.invalidateQueries({queryKey: ["assignees"]})
   })
@@ -38,7 +38,13 @@ export function useDeleteAssignee(){
     mutationFn: async (assigneeId: string) => {
       return deleteAssignee(assigneeId)
     },
-    onSuccess: ()=> queryClient.invalidateQueries({queryKey: ["assignees"]})
+    onSuccess: ()=> {
+      toast.success("Assignee succesvol verwijderd.")
+      queryClient.invalidateQueries({queryKey: ["assignees"]})
+    },
+    onError: (error)=> {
+      toast.error(error.message)
+    }
 
   })
 }

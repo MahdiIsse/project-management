@@ -10,8 +10,7 @@ import {
 import { StatusTable } from "@/features/task-management/components/list";
 import { DeleteConfirmDialog } from "@/features/task-management/components/shared";
 import type { TaskFilters } from "@/features/task-management/types";
-import { COLORS } from "@/shared";
-import { Button, Dialog, DialogContent } from "@/shared";
+import { Button, Dialog, DialogContent, Skeleton } from "@/shared";
 import { Trash2, Plus } from "lucide-react";
 import { ColumnForm } from "@/features/task-management/components/form";
 
@@ -49,7 +48,6 @@ export function TaskListView({ filters }: TaskListViewProps) {
 
   const { mutate: deleteTask } = useDeleteTask();
 
-  // ✅ Drag & Drop Setup
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -58,7 +56,6 @@ export function TaskListView({ filters }: TaskListViewProps) {
     })
   );
 
-  // ✅ Column drag and drop hook
   const {
     handleDragStart,
     handleDragEnd,
@@ -66,7 +63,6 @@ export function TaskListView({ filters }: TaskListViewProps) {
     activeItem: activeColumn,
   } = useColumnDragAndDrop({ columns: columns || [], workspaceId });
 
-  // ✅ Drag handlers
   const onDragStart = (event: DragStartEvent) => {
     const dragType = event.active.data.current?.type;
     if (dragType === "Column") {
@@ -81,25 +77,14 @@ export function TaskListView({ filters }: TaskListViewProps) {
     }
   };
 
-  // Helper functie voor kolom kleur
-  const getColumnColor = (columnId: string) => {
-    const column = displayColumns?.find((col) => col.id === columnId);
-    if (!column?.border) return "bg-neutral-100 text-neutral-700";
-
-    // Zoek de kleur in COLORS array op basis van border
-    const colorMatch = COLORS.find((color) => color.border === column.border);
-
-    if (!colorMatch) return "bg-neutral-100 text-neutral-700";
-
-    return `${colorMatch.colorBg} ${colorMatch.colorText}`;
-  };
-
   const isLoading = tasksLoading || columnsLoading;
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-lg font-semibold">Loading tasks...</div>
+      <div className="space-y-4 px-4 py-8 w-full">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-8 w-full rounded" />
+        ))}
       </div>
     );
   }
@@ -114,7 +99,6 @@ export function TaskListView({ filters }: TaskListViewProps) {
     );
   }
 
-  // Groepeer taken per kolom ID - ✅ gebruik displayColumns
   const tasksByColumnId =
     tasks?.reduce((acc, task) => {
       if (!acc[task.columnId]) acc[task.columnId] = [];
@@ -145,7 +129,6 @@ export function TaskListView({ filters }: TaskListViewProps) {
   };
 
   return (
-    // ✅ DndContext wrapper
     <DndContext
       sensors={sensors}
       onDragStart={onDragStart}
@@ -175,21 +158,17 @@ export function TaskListView({ filters }: TaskListViewProps) {
           )}
         </div>
 
-        {/* ✅ SortableContext wrapper */}
         <SortableContext
           items={displayColumns.map((column) => column.id)}
           strategy={verticalListSortingStrategy}
         >
           {displayColumns?.map((column) => {
             const columnTasks = tasksByColumnId[column.id] || [];
-            const statusColor = getColumnColor(column.id);
 
             return (
               <StatusTable
                 key={column.id}
-                status={column.title}
                 tasks={columnTasks}
-                statusColor={statusColor}
                 onTaskSelect={handleTaskSelect}
                 selectedTasks={selectedTasks}
                 workspaceId={workspaceId}
@@ -214,7 +193,8 @@ export function TaskListView({ filters }: TaskListViewProps) {
           isOpen={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
           onConfirm={handleDeleteConfirm}
-          taskCount={selectedTasks.length}
+          itemType="taak"
+          itemCount={selectedTasks.length}
         />
 
         <Dialog open={isColumnFormOpen} onOpenChange={setIsColumnFormOpen}>
@@ -227,14 +207,11 @@ export function TaskListView({ filters }: TaskListViewProps) {
         </Dialog>
       </div>
 
-      {/* ✅ DragOverlay voor preview (voorlopig leeg) */}
       <DragOverlay>
         {activeColumn ? (
           <div className="rotate-2 scale-105 shadow-2xl opacity-80">
             <StatusTable
-              status={activeColumn.title}
               tasks={tasksByColumnId[activeColumn.id] || []}
-              statusColor={getColumnColor(activeColumn.id)}
               onTaskSelect={() => {}}
               selectedTasks={[]}
               workspaceId={workspaceId}

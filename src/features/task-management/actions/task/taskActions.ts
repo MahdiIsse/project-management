@@ -5,7 +5,6 @@ import {
   TaskSchemaValues, 
   TaskWithJoins, 
   mapTask, 
-  TaskFilters,
 } from "@/features/task-management"
 import {createServerClient} from "@/shared/lib/supabase/server"
 

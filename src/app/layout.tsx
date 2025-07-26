@@ -3,8 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
-import { SidebarProvider } from "@/shared/components/ui/sidebar";
-import { AppSidebar, TopNavBar } from "@/features/workspace/components";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,21 +31,10 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
           disableTransitionOnChange
         >
-          <QueryProvider>
-            <SidebarProvider>
-              <div className="flex min-h-screen w-full">
-                <AppSidebar />
-                <main className="flex-1 overflow-hidden flex flex-col">
-                  <TopNavBar />
-                  <div className="flex-1 h-0 overflow-y-auto">{children}</div>
-                </main>
-              </div>
-            </SidebarProvider>
-          </QueryProvider>
+          <QueryProvider>{children}</QueryProvider>
         </ThemeProvider>
       </body>
     </html>

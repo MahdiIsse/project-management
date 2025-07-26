@@ -1,13 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTaskTags, addTagToTask, removeTagFromTask } from "@/features/task-management/actions";
+import {  useMutation, useQueryClient } from "@tanstack/react-query";
+import {  addTagToTask, removeTagFromTask } from "@/features/task-management/actions";
 
-export function useTaskTags(taskId: string) {
-  return useQuery({
-    queryKey: ["taskTags", taskId],
-    queryFn: () => getTaskTags(taskId),
-    enabled: !!taskId,
-  });
-}
 
 export function useAddTagToTask() {
   const queryClient = useQueryClient();
@@ -22,8 +15,8 @@ export function useAddTagToTask() {
     }) => {
       return addTagToTask(taskId, tagId);
     },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["taskTags", variables.taskId] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }
@@ -41,8 +34,8 @@ export function useRemoveTagFromTask() {
     }) => {
       return removeTagFromTask(taskId, tagId);
     },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["taskTags", variables.taskId] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }
