@@ -8,10 +8,10 @@ import {
 } from "@/features/task-management"
 import {createServerClient} from "@/shared/lib/supabase/server"
 
-export async function getTasks( workspaceId: string, filters?: TaskFilters): Promise<Task[]> {
+export async function getTasks( workspaceId: string): Promise<Task[]> {
   const supabase = await createServerClient()
 
-  let query = supabase
+  const {data, error } = await supabase
     .from('tasks')
     .select(`
     *, 
@@ -21,21 +21,8 @@ export async function getTasks( workspaceId: string, filters?: TaskFilters): Pro
   task_tags:task_tags(
   tag:tags(*)
   )
-  `).eq("workspace_id", workspaceId)
-
-  if (filters?.search) {
-    query = query.ilike("title", `%${filters.search}%`)
-  }
-
-  if (filters?.priorities && filters.priorities.length > 0) {
-    query = query.in("priority", filters.priorities)
-  }
-
-  if (filters?.assigneeIds && filters.assigneeIds.length > 0) {
-    query = query.in("task_assignees.assignee_id", filters.assigneeIds)
-  }
-
-  const {data, error} = await query.order("position", {ascending: true}) 
+    `).eq("workspace_id", workspaceId)
+    .order("position", {ascending: true}) 
 
   if (error) throw error
 

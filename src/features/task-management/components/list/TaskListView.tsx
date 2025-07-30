@@ -9,7 +9,6 @@ import {
 } from "@/features/task-management/hooks";
 import { StatusTable } from "@/features/task-management/components/list";
 import { DeleteConfirmDialog } from "@/features/task-management/components/shared";
-import type { TaskFilters } from "@/features/task-management/types";
 import { Button, Dialog, DialogContent, Skeleton } from "@/shared";
 import { Trash2, Plus } from "lucide-react";
 import { ColumnForm } from "@/features/task-management/components/form";
@@ -28,18 +27,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-interface TaskListViewProps {
-  filters: TaskFilters;
-}
-
-export function TaskListView({ filters }: TaskListViewProps) {
+export function TaskListView() {
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("workspace") ?? "";
 
-  const { data: tasks, isLoading: tasksLoading } = useTasks(
-    workspaceId,
-    filters
-  );
+  const { data: tasks, isLoading: tasksLoading } = useTasks(workspaceId);
   const { data: columns, isLoading: columnsLoading } = useColumns(workspaceId);
 
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);

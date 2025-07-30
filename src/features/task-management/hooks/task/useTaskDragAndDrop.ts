@@ -3,7 +3,7 @@
 import { Task } from "@/features/task-management/types"
 import { useUpdateTasksPositions } from "@/features/task-management/hooks/task"
 import { useState } from "react"
-import { DragEndEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core"
+import {  DragOverEvent, DragStartEvent } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 
 interface UseDragAndDropProps {
@@ -77,7 +77,7 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
     }
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = () => {
     setActiveTask(null);
     
     if (!localTasks) {

@@ -54,7 +54,7 @@ export function useUpdateColumnsPositions(){
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async({updates, optimisticColumns, workspaceId}: {
+    mutationFn: async({updates}: {
       updates: {id: string, position: number}[];
       optimisticColumns: Column[];
       workspaceId: string

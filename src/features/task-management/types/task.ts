@@ -15,8 +15,3 @@ export type Task = {
   tags: Tag[];
 };
 
-export interface TaskFilters {
-  assigneeIds?: string[];
-  priorities?: Priority[];
-  search?: string;
-}

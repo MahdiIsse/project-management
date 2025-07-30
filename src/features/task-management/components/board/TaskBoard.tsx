@@ -24,15 +24,10 @@ import {
   useTasks,
   useTaskDragAndDrop,
 } from "@/features/task-management";
-import type { TaskFilters } from "@/features/task-management/types";
 import { TaskColumn, TaskCard } from "@/features/task-management";
 import { ColumnForm } from "@/features/task-management";
 
-interface TaskBoardProps {
-  filters: TaskFilters;
-}
-
-export function TaskBoard({ filters }: TaskBoardProps) {
+export function TaskBoard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const searchParams = useSearchParams();
@@ -43,7 +38,7 @@ export function TaskBoard({ filters }: TaskBoardProps) {
     isLoading: columnsLoading,
     isError: columnsError,
   } = useColumns(workspaceId);
-  const { data: tasks = [] } = useTasks(workspaceId, filters);
+  const { data: tasks = [] } = useTasks(workspaceId);
 
   // Task drag and drop
   const {
@@ -86,7 +81,7 @@ export function TaskBoard({ filters }: TaskBoardProps) {
     const dragType = event.active.data.current?.type;
 
     if (dragType === "Task") {
-      handleTaskDragEnd(event);
+      handleTaskDragEnd();
     } else if (dragType === "Column") {
       handleColumnDragEnd(event);
     }

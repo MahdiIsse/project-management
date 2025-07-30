@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { getTasks, createTask, updateTask, deleteTask, updateTasksPositions } from "@/features/task-management/actions"
 import { TaskSchemaValues } from "@/features/task-management/schemas"
-import type { Task, TaskFilters } from "@/features/task-management/types"
+import type { Task } from "@/features/task-management/types"
 
-export function useTasks(workspaceId: string, filters?: TaskFilters){
+export function useTasks(workspaceId: string){
   return useQuery({
-    queryKey: ["tasks", workspaceId, filters],
-    queryFn: ()=> getTasks(workspaceId, filters),
+    queryKey: ["tasks", workspaceId],
+    queryFn: ()=> getTasks(workspaceId),
     enabled: !!workspaceId
   })
 }
