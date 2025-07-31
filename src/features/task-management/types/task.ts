@@ -15,3 +15,8 @@ export type Task = {
   tags: Tag[];
 };
 
+export type TaskFilterParams = {
+  search?: string;
+  assigneeIds?: string[];
+  priorities?: string[]
+}

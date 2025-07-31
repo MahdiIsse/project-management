@@ -1,1 +1,1 @@
-export type ViewMode = "list" | "board" | "calendar";
+export type ViewMode = "list" | "board";

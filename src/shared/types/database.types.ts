@@ -75,27 +75,21 @@ export type Database = {
       }
       tags: {
         Row: {
-          color_bg: string
           color_name: string
-          color_text: string
           created_at: string | null
           id: string
           name: string
           owner_id: string | null
         }
         Insert: {
-          color_bg: string
           color_name: string
-          color_text: string
           created_at?: string | null
           id?: string
           name: string
           owner_id?: string | null
         }
         Update: {
-          color_bg?: string
           color_name?: string
-          color_text?: string
           created_at?: string | null
           id?: string
           name?: string

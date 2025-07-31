@@ -36,6 +36,12 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/shared";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
+import { getColumnTextStyle } from "../../utils";
+import { useState } from "react";
+import {
+  AssigneeFormSelector,
+  TagFormSelector,
+} from "@/features/task-management";
 
 interface TaskFormProps {
   workspaceId: string;
@@ -49,6 +55,9 @@ export function TaskForm({
   closeDialog,
 }: TaskFormProps) {
   const isEditMode = Boolean(taskToEdit);
+  const { data: columns } = useColumns(workspaceId);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
   const form = useForm<TaskSchemaValues>({
     resolver: zodResolver(taskSchema),
     defaultValues:
@@ -61,19 +70,22 @@ export function TaskForm({
             dueDate: taskToEdit.dueDate
               ? new Date(taskToEdit.dueDate)
               : undefined,
+            assigneeIds: taskToEdit.assignees.map((a) => a.id),
+            tagIds: taskToEdit.tags.map((t) => t.id),
           }
         : {
             title: "",
             description: "",
-            columnId: "",
-            priority: undefined,
+            columnId: columns && columns.length > 0 ? columns[0].id : "",
+            priority: "Low",
             dueDate: undefined,
+            assigneeIds: [],
+            tagIds: [],
           },
   });
 
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: createTask } = useCreateTask();
-  const { data: columns } = useColumns(workspaceId);
 
   const onSubmit = (data: TaskSchemaValues) => {
     if (isEditMode) {
@@ -82,7 +94,6 @@ export function TaskForm({
         {
           data: {
             ...data,
-            dueDate: data.dueDate ? data.dueDate.toISOString() : undefined,
           },
           taskId: taskToEdit.id,
         },
@@ -130,19 +141,18 @@ export function TaskForm({
           )}
         />
 
-        <div className="flex justify-between">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="priority"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Prioriteit</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <FormLabel className="text-sm font-medium">
+                  Prioriteit
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-10">
                       <SelectValue placeholder="Selecteer prioriteit" />
                     </SelectTrigger>
                   </FormControl>
@@ -164,20 +174,17 @@ export function TaskForm({
             name="columnId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <FormLabel className="text-sm font-medium">Status</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-10">
                       <SelectValue placeholder="Selecteer status" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {columns?.map((column) => (
                       <SelectItem key={column.id} value={column.id}>
-                        <span className={cn(column.border)}>
+                        <span className={getColumnTextStyle(column.border)}>
                           {column.title}
                         </span>
                       </SelectItem>
@@ -196,7 +203,7 @@ export function TaskForm({
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Vervaldatum</FormLabel>
-              <Popover>
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
@@ -219,7 +226,10 @@ export function TaskForm({
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      field.onChange(date);
+                      setIsPopoverOpen(false);
+                    }}
                     disabled={(date) =>
                       date < new Date(new Date().setHours(0, 0, 0, 0))
                     }
@@ -231,11 +241,50 @@ export function TaskForm({
           )}
         />
 
-        <div className="flex gap-2">
-          <Button type="submit" className="flex-1">
-            {isEditMode ? "Opslaan" : "Maak aan"}
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="assigneeIds"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <AssigneeFormSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="tagIds"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <TagFormSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <Button type="submit" className="flex-1 h-10 font-medium">
+            {isEditMode ? "Wijzigingen opslaan" : "Taak aanmaken"}
           </Button>
-          <Button type="button" variant="outline" onClick={closeDialog}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={closeDialog}
+            className="px-6 h-10"
+          >
             Annuleren
           </Button>
         </div>

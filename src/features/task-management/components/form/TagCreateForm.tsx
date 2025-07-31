@@ -1,8 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Button,
   Badge,
@@ -13,63 +13,77 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/shared";
 import { cn } from "@/shared";
 import { Check, Plus } from "lucide-react";
-import { COLORS, ColorInternalName, getTagColorByName } from "@/shared";
-import { useCreateTag } from "@/features/task-management";
+import {
+  TAG_COLORS,
+  getTagColorByName,
+} from "@/features/task-management/utils/tagColors";
+import { useCreateTag, useUpdateTag } from "@/features/task-management";
+import {
+  tagSchema,
+  TagSchemaValues,
+} from "@/features/task-management/schemas/tags";
 import type { Tag } from "@/features/task-management";
-
-const tagCreateSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Naam moet minimaal 2 tekens lang zijn." }),
-  colorSelection: z.string().min(1, "Selecteer een kleur"),
-});
-
-type TagCreateValues = z.infer<typeof tagCreateSchema>;
 
 interface TagCreateFormProps {
   onSuccess?: (newTag: Tag) => void;
   initialName?: string;
+  tagToEdit?: Tag;
 }
 
 export function TagCreateForm({
   onSuccess,
   initialName = "",
+  tagToEdit,
 }: TagCreateFormProps) {
-  const { mutate: createTag, isPending } = useCreateTag();
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const { mutate: createTag, isPending: isCreating } = useCreateTag();
+  const { mutate: updateTag, isPending: isUpdating } = useUpdateTag();
 
-  const form = useForm<TagCreateValues>({
-    resolver: zodResolver(tagCreateSchema),
-    defaultValues: {
-      name: initialName,
-      colorSelection: "",
-    },
+  const isEditMode = Boolean(tagToEdit);
+  const isPending = isCreating || isUpdating;
+
+  const form = useForm<TagSchemaValues>({
+    resolver: zodResolver(tagSchema),
+    defaultValues:
+      isEditMode && tagToEdit
+        ? {
+            name: tagToEdit.name,
+            colorName: tagToEdit.colorName,
+          }
+        : {
+            name: initialName,
+            colorName: TAG_COLORS[0].name,
+          },
   });
 
-  const selectedColorName = form.watch("colorSelection");
+  const selectedColorName = form.watch("colorName");
   const tagName = form.watch("name");
-  const selectedColorData = getTagColorByName(
-    selectedColorName as ColorInternalName
-  );
+  const selectedColorData = getTagColorByName(selectedColorName);
 
-  const onSubmit = (data: TagCreateValues) => {
-    const colorData = getTagColorByName(
-      data.colorSelection as ColorInternalName
-    );
-    if (!colorData) return;
-
-    const tagData = {
-      name: data.name,
-      colorName: colorData.name,
-      colorText: colorData.colorText,
-      colorBg: colorData.colorBg,
-    };
-
-    createTag(tagData, {
+  const onSubmit = (data: TagSchemaValues) => {
+    if (isEditMode && tagToEdit) {
+      updateTag(
+        { tagId: tagToEdit.id, data },
+        {
+          onSuccess: (updatedTag) => {
+            form.reset();
+            onSuccess?.(updatedTag);
+          },
+        }
+      );
+    }
+    createTag(data, {
       onSuccess: (newTag) => {
-        form.reset({ name: "", colorSelection: "" });
+        form.reset({
+          name: "",
+          colorName: TAG_COLORS[0].name,
+        });
         onSuccess?.(newTag);
       },
     });
@@ -95,37 +109,78 @@ export function TagCreateForm({
 
           <FormField
             control={form.control}
-            name="colorSelection"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Kleur</FormLabel>
-                <FormControl>
-                  <div className="grid grid-cols-5 gap-2">
-                    {COLORS.map((color) => (
-                      <button
-                        key={color.name}
-                        type="button"
-                        onClick={() => field.onChange(color.name)}
-                        className={cn(
-                          "relative h-8 w-full rounded-md border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/20",
-                          color.colorBg,
-                          selectedColorName === color.name
-                            ? "border-primary ring-2 ring-primary/20 scale-105"
-                            : "border-gray-200 hover:border-gray-300"
-                        )}
-                        title={color.name}
-                        aria-label={`Selecteer kleur ${color.name}`}
-                      >
-                        {selectedColorName === color.name && (
-                          <Check className="absolute inset-0 m-auto h-4 w-4 text-white drop-shadow-lg" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            name="colorName"
+            render={({ field }) => {
+              const selectedColor = TAG_COLORS.find(
+                (color) => color.name === field.value
+              );
+
+              return (
+                <FormItem>
+                  <FormLabel>Kleur</FormLabel>
+                  <Popover
+                    open={isColorPickerOpen}
+                    onOpenChange={setIsColorPickerOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left h-10 px-3"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={cn(
+                                "w-4 h-4 rounded-full border",
+                                selectedColor?.pickerBg // 👈 Gebruik heldere kleur in plaats van colorBg
+                              )}
+                            />
+                            <span className="font-normal">
+                              {selectedColor?.name || "Selecteer een kleur"}
+                            </span>
+                          </div>
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-0">
+                      <div className="bg-background border rounded-md shadow-lg">
+                        <div className="p-4 space-y-3">
+                          <div className="text-sm font-medium text-center text-foreground">
+                            Kies een kleur voor je tag
+                          </div>
+                          <div className="grid grid-cols-5 gap-3">
+                            {TAG_COLORS.map((color) => (
+                              <button
+                                key={color.name}
+                                type="button"
+                                className={cn(
+                                  "w-8 h-8 rounded-full border-2",
+                                  "hover:border-primary hover:scale-110 transition-all duration-200",
+                                  "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                                  color.pickerBg,
+                                  field.value === color.name
+                                    ? "border-primary ring-2 ring-primary ring-offset-2"
+                                    : "border-background/50"
+                                )}
+                                onClick={() => {
+                                  field.onChange(color.name);
+                                  setIsColorPickerOpen(false);
+                                }}
+                                title={color.name}
+                              />
+                            ))}
+                          </div>
+                          <div className="text-xs text-muted-foreground text-center">
+                            Klik op een kleur om deze te selecteren
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
 
           {tagName && selectedColorData && (

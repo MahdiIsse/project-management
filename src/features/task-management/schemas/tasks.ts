@@ -5,7 +5,10 @@ export const taskSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(["Low", "Medium", "High"]).optional(),
   dueDate: z.date().optional(),
-  columnId: z.string()
+  columnId: z.string(),
+  position: z.number().optional(),
+  assigneeIds: z.array(z.string()),
+  tagIds: z.array(z.string())
 })
 
 export type TaskSchemaValues = z.infer<typeof taskSchema>

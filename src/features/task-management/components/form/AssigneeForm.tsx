@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   useCreateAssignee,
   useUpdateAssignee,
@@ -19,9 +20,12 @@ import {
   FormMessage,
   Input,
   Button,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
 } from "@/shared";
 import { Assignee } from "../../types";
-import Image from "next/image";
+import { Upload, X } from "lucide-react";
 
 interface AssigneeFormProps {
   assigneeToEdit?: Assignee;
@@ -34,6 +38,9 @@ export function AssigneeForm({
   closeDialog,
   onAssigneeCreated,
 }: AssigneeFormProps) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const isEditMode = Boolean(assigneeToEdit);
   const { mutate: createAssignee, isPending } = useCreateAssignee();
   const { mutate: updateAssignee } = useUpdateAssignee();
@@ -52,6 +59,26 @@ export function AssigneeForm({
           },
   });
 
+  const handleFileChange = (file: File | undefined) => {
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      form.setValue("avatarFile", file);
+    } else {
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      form.setValue("avatarFile", undefined);
+    }
+  };
+
+  const clearFile = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    handleFileChange(undefined);
+  };
+
   const onSubmit = (data: AssigneeSchemaValues) => {
     const formData = new FormData();
     formData.append("name", data.name);
@@ -67,6 +94,7 @@ export function AssigneeForm({
         {
           onSuccess: () => {
             form.reset();
+            clearFile();
             closeDialog();
           },
         }
@@ -77,6 +105,7 @@ export function AssigneeForm({
         {
           onSuccess: (newAssignee) => {
             form.reset();
+            clearFile();
             closeDialog();
             onAssigneeCreated?.(newAssignee);
           },
@@ -85,19 +114,43 @@ export function AssigneeForm({
     }
   };
 
+  // Determine which avatar to show
+  const currentAvatarUrl = assigneeToEdit?.avatarUrl;
+  const showAvatar = previewUrl || currentAvatarUrl;
+  const avatarDisplayName = form.watch("name") || assigneeToEdit?.name || "";
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {isEditMode && assigneeToEdit?.avatarUrl && (
-          <div className="space-y-2">
-            <FormLabel>Huidige Avatar</FormLabel>
-            <Image
-              src={assigneeToEdit.avatarUrl}
-              alt={assigneeToEdit.name}
-              width={64}
-              height={64}
-              className="rounded-full object-cover"
-            />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Avatar Preview Section */}
+        {showAvatar && (
+          <div className="flex flex-col items-center justify-center gap-3">
+            <FormLabel>
+              {previewUrl ? "Nieuwe Avatar Preview" : "Huidige Avatar"}
+            </FormLabel>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-28 w-28">
+                <AvatarImage
+                  src={previewUrl || currentAvatarUrl || ""}
+                  alt={avatarDisplayName}
+                />
+                <AvatarFallback className="text-lg">
+                  {avatarDisplayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            {previewUrl && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={clearFile}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Verwijder
+              </Button>
+            )}
           </div>
         )}
 
@@ -106,10 +159,10 @@ export function AssigneeForm({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Naam:</FormLabel>
+              <FormLabel>Naam</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Vul hier de naam in van de verantwoordelijke"
+                  placeholder="Vul hier de naam in van de team member"
                   {...field}
                 />
               </FormControl>
@@ -125,20 +178,63 @@ export function AssigneeForm({
             <FormItem>
               <FormLabel>Avatar</FormLabel>
               <FormControl>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => field.onChange(e.target.files?.[0])}
-                />
+                <div className="space-y-3">
+                  {/* Custom File Input */}
+                  <div className="flex items-center gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="relative overflow-hidden"
+                      onClick={() =>
+                        document.getElementById("avatar-upload")?.click()
+                      }
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {selectedFile ? "Bestand wijzigen" : "Bestand kiezen"}
+                    </Button>
+
+                    <span className="text-sm text-muted-foreground">
+                      {selectedFile
+                        ? selectedFile.name
+                        : currentAvatarUrl
+                        ? "Huidige avatar behouden"
+                        : "Geen bestand geselecteerd"}
+                    </span>
+                  </div>
+
+                  {/* Hidden File Input */}
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileChange(e.target.files?.[0])}
+                  />
+
+                  <p className="text-xs text-muted-foreground">
+                    Ondersteunde formaten: JPG, PNG, WEBP. Max 5MB.
+                  </p>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit" disabled={isPending}>
-          {isEditMode ? "Opslaan" : "Maak aan"}
-        </Button>
+        <div className="flex gap-3 pt-4">
+          <Button type="submit" className="flex-1" disabled={isPending}>
+            {isPending
+              ? isEditMode
+                ? "Opslaan..."
+                : "Aanmaken..."
+              : isEditMode
+              ? "Wijzigingen opslaan"
+              : "Team member aanmaken"}
+          </Button>
+          <Button type="button" variant="outline" onClick={closeDialog}>
+            Annuleren
+          </Button>
+        </div>
       </form>
     </Form>
   );

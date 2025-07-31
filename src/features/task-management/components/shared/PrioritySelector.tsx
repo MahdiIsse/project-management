@@ -29,12 +29,21 @@ export function PrioritySelector({
       <DropdownMenuTrigger asChild>
         <div
           className={cn(
-            "flex items-center gap-1 cursor-pointer",
+            "flex items-center gap-1 cursor-pointer group hover:opacity-80 transition-all duration-200",
+            "hover:bg-muted/50 rounded-md px-2 py-1 -mx-2 -my-1",
             variant === "compact" && "text-xs"
           )}
         >
-          <Flag className={cn("h-4 w-4", priorityColor)} />
-          <span className="text-sm">{priorityOption?.label}</span>
+          <Flag
+            className={cn(
+              "h-4 w-4 transition-transform group-hover:scale-110",
+              priorityColor,
+              variant === "compact" && "h-3 w-3"
+            )}
+          />
+          <span className="text-sm transition-colors">
+            {priorityOption?.label}
+          </span>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

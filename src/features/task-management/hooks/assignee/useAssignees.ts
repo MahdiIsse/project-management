@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { getAssignees, createAssignee, updateAssignee, deleteAssignee } from "@/features/task-management"
-import { toast } from "sonner"
 
 export function useAssignees() {
   return useQuery({
@@ -39,12 +38,8 @@ export function useDeleteAssignee(){
       return deleteAssignee(assigneeId)
     },
     onSuccess: ()=> {
-      toast.success("Assignee succesvol verwijderd.")
       queryClient.invalidateQueries({queryKey: ["assignees"]})
     },
-    onError: (error)=> {
-      toast.error(error.message)
-    }
 
   })
 }

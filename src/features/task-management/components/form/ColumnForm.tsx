@@ -23,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/shared";
 import { Button, Input } from "@/shared";
 import { cn } from "@/shared";
 import { Column } from "@/features/task-management/types";
-import { COLORS } from "@/shared";
+import { COLUMN_COLORS } from "@/features/task-management/utils";
 
 interface ColumnFormProps {
   workspaceId: string;
@@ -47,11 +47,11 @@ export function ColumnForm({
     defaultValues: isEditMode
       ? {
           title: columnToEdit?.title,
-          border: columnToEdit?.border || COLORS[0].border,
+          border: columnToEdit?.border || COLUMN_COLORS[0].border,
         }
       : {
           title: "",
-          border: COLORS[0].border, // Default naar eerste kleur
+          border: COLUMN_COLORS[0].border, // Default naar eerste kleur
         },
   });
 
@@ -104,7 +104,7 @@ export function ColumnForm({
           control={form.control}
           name="border"
           render={({ field }) => {
-            const selectedColor = COLORS.find(
+            const selectedColor = COLUMN_COLORS.find(
               (color) => color.border === field.value
             );
 
@@ -142,7 +142,7 @@ export function ColumnForm({
                         Kies een kleur voor je kolom
                       </div>
                       <div className="grid grid-cols-5 gap-3">
-                        {COLORS.map((color) => (
+                        {COLUMN_COLORS.map((color) => (
                           <button
                             key={color.name}
                             type="button"
@@ -150,7 +150,7 @@ export function ColumnForm({
                               "w-8 h-8 rounded-full border-2",
                               "hover:border-gray-400 transition-colors",
                               "focus:outline-none focus:border-gray-600",
-                              color.columnBg,
+                              color.pickerBg,
                               field.value === color.border
                                 ? color.border
                                 : "border-transparent"

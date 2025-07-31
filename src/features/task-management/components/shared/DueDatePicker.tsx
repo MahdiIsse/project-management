@@ -3,8 +3,7 @@ import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 
 import { cn } from "@/shared";
-import { formatTaskDueDate } from "@/shared";
-import { isPast, isToday } from "date-fns";
+import { formatTaskDueDate, getDateColorClass } from "@/shared";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared";
 import { Calendar } from "@/shared";
@@ -22,26 +21,27 @@ export function DueDatePicker({
 }: DueDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const isOverdue =
-    currentDate &&
-    isPast(new Date(currentDate)) &&
-    !isToday(new Date(currentDate));
-
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <div
           className={cn(
-            "flex items-center gap-1 cursor-pointer",
+            "flex items-center gap-1 cursor-pointer group transition-all duration-200",
+            "hover:bg-muted/80 hover:shadow-sm rounded-md px-2 py-1 -mx-2 -my-1",
             variant === "compact" && "text-xs"
           )}
         >
-          <CalendarDays className="h-4 w-4" />
+          <CalendarDays
+            className={cn(
+              "h-4 w-4 transition-transform group-hover:scale-110",
+              variant === "compact" && "h-3 w-3"
+            )}
+          />
           <span
-            className={cn("text-sm", {
-              "text-red-500": isOverdue,
-              "text-orange-500": currentDate && isToday(new Date(currentDate)),
-            })}
+            className={cn(
+              "text-sm transition-all duration-200 group-hover:scale-[1.02]",
+              getDateColorClass(currentDate) // 👈 Use utility function
+            )}
           >
             {currentDate ? formatTaskDueDate(currentDate) : "Geen datum"}
           </span>

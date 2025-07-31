@@ -15,16 +15,29 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
 } from "@/shared";
 import { cn } from "@/shared";
-import { Plus, Search, Check, Tag as TagIcon } from "lucide-react";
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Tag as TagIcon,
+  Settings,
+  Trash2,
+} from "lucide-react";
 import type { Tag } from "@/features/task-management/types";
-import { useTags } from "@/features/task-management/hooks";
+import { useTags, useDeleteTag } from "@/features/task-management/hooks";
 import {
   useAddTagToTask,
   useRemoveTagFromTask,
 } from "@/features/task-management/hooks";
 import { TagCreateForm } from "@/features/task-management/components/form";
+import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+import { getTagColorByName } from "@/features/task-management/utils";
 
 interface TagSelectorProps {
   tags: Tag[];
@@ -45,7 +58,10 @@ export function TagSelector({
 }: TagSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<Tag | undefined>(undefined);
 
   // Data hooks
   const { data: allTags, isLoading: isLoadingAll } = useTags();
@@ -53,6 +69,7 @@ export function TagSelector({
   // Action hooks
   const { mutate: addTag, isPending: isAdding } = useAddTagToTask();
   const { mutate: removeTag, isPending: isRemoving } = useRemoveTagFromTask();
+  const { mutate: deleteTag } = useDeleteTag();
 
   // Safe data access
   const safeAllTags = allTags || [];
@@ -78,8 +95,29 @@ export function TagSelector({
   };
 
   const handleCreateClick = () => {
-    setIsDialogOpen(true);
+    setSelectedTag(undefined);
+    setIsCreateDialogOpen(true);
     setIsPopoverOpen(false); // Close popover for cleaner UX
+  };
+
+  const handleEditClick = (tag: Tag) => {
+    setSelectedTag(tag);
+    setIsEditDialogOpen(true);
+    setIsPopoverOpen(false);
+  };
+
+  const handleDeleteRequest = (tag: Tag) => {
+    setSelectedTag(tag);
+    setIsDeleteConfirmOpen(true);
+    setIsPopoverOpen(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedTag) {
+      deleteTag(selectedTag.id, {
+        onSuccess: () => setIsDeleteConfirmOpen(false),
+      });
+    }
   };
 
   const hasTags = safeTaskTags.length > 0;
@@ -95,19 +133,22 @@ export function TagSelector({
                 layout === "stacked" && "flex-col items-start"
               )}
             >
-              {visibleTags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  className={cn(
-                    tag.colorBg,
-                    tag.colorText,
-                    "transition-transform hover:scale-105 flex-shrink-0",
-                    variant === "compact" && "text-xs px-1.5 py-0.5"
-                  )}
-                >
-                  {tag.name}
-                </Badge>
-              ))}
+              {visibleTags.map((tag) => {
+                const colors = getTagColorByName(tag.colorName);
+                return (
+                  <Badge
+                    key={tag.id}
+                    className={cn(
+                      colors?.colorBg,
+                      colors?.colorText,
+                      "transition-transform hover:scale-105 flex-shrink-0",
+                      variant === "compact" && "text-xs px-1.5 py-0.5"
+                    )}
+                  >
+                    {tag.name}
+                  </Badge>
+                );
+              })}
               {remainingCount > 0 && (
                 <Badge
                   variant="outline"
@@ -179,34 +220,69 @@ export function TagSelector({
               ) : (
                 filteredTags.map((tag) => {
                   const assigned = isAssigned(tag.id);
+                  const colors = getTagColorByName(tag.colorName);
                   return (
                     <div
                       key={tag.id}
                       className={cn(
-                        "flex items-center space-x-3 p-2 rounded-md cursor-pointer transition-colors",
+                        "group flex items-center space-x-3 p-2 rounded-md transition-colors",
                         "hover:bg-muted/50",
                         assigned && "bg-muted"
                       )}
-                      onClick={() => handleTagToggle(tag)}
                     >
                       <Checkbox
                         checked={assigned}
                         disabled={isAdding || isRemoving}
                         className="pointer-events-none"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTagToggle(tag);
+                        }}
                       />
                       <Badge
                         className={cn(
-                          tag.colorBg,
-                          tag.colorText,
-                          "pointer-events-none text-xs"
+                          colors?.colorBg,
+                          colors?.colorText,
+                          "pointer-events-none text-xs cursor-pointer"
                         )}
+                        onClick={() => handleTagToggle(tag)}
                       >
                         {tag.name}
                       </Badge>
-                      <span className="flex-1 text-sm font-medium truncate">
+                      <span
+                        className="flex-1 text-sm font-medium truncate cursor-pointer"
+                        onClick={() => handleTagToggle(tag)}
+                      >
                         {tag.name}
                       </span>
-                      {assigned && <Check className="h-4 w-4 text-green-600" />}
+
+                      {/* Action Menu */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent/50 rounded ml-auto shrink-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem
+                            onClick={() => handleEditClick(tag)}
+                            className="cursor-pointer"
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Bewerken
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteRequest(tag)}
+                            className="cursor-pointer text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Verwijderen
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   );
                 })
@@ -225,7 +301,8 @@ export function TagSelector({
         </PopoverContent>
       </Popover>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Create Tag Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Nieuwe tag aanmaken</DialogTitle>
@@ -241,7 +318,7 @@ export function TagSelector({
                 { taskId, tagId: newTag.id },
                 {
                   onSuccess: () => {
-                    setIsDialogOpen(false);
+                    setIsCreateDialogOpen(false);
                     setSearchQuery("");
                   },
                 }
@@ -250,6 +327,37 @@ export function TagSelector({
           />
         </DialogContent>
       </Dialog>
+
+      {/* Edit Tag Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tag bewerken</DialogTitle>
+            <DialogDescription>
+              Bewerk de details van de tag &quot;{selectedTag?.name}&quot;.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTag && (
+            <TagCreateForm
+              initialName={selectedTag.name}
+              tagToEdit={selectedTag}
+              onSuccess={() => {
+                setIsEditDialogOpen(false);
+                setSelectedTag(undefined);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        itemType="tag"
+        itemName={selectedTag?.name}
+      />
     </>
   );
 }

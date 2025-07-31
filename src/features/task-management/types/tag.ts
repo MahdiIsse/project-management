@@ -1,7 +1,7 @@
 export type Tag = {
   id: string;
   name: string;
-  colorBg: string;
-  colorText: string;
   colorName: string;
+  createdAt?: string | null;
+  ownerId?: string | null;
 };

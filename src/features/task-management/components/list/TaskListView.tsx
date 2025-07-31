@@ -2,16 +2,19 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useTasks, useDeleteTask } from "@/features/task-management/hooks";
+import {
+  useTasks,
+  useDeleteTask,
+  useTaskFilters,
+} from "@/features/task-management/hooks";
 import {
   useColumns,
   useColumnDragAndDrop,
 } from "@/features/task-management/hooks";
 import { StatusTable } from "@/features/task-management/components/list";
 import { DeleteConfirmDialog } from "@/features/task-management/components/shared";
-import { Button, Dialog, DialogContent, Skeleton } from "@/shared";
-import { Trash2, Plus } from "lucide-react";
-import { ColumnForm } from "@/features/task-management/components/form";
+import { Button, Skeleton } from "@/shared";
+import { Trash2 } from "lucide-react";
 
 import {
   DndContext,
@@ -28,15 +31,18 @@ import {
 } from "@dnd-kit/sortable";
 
 export function TaskListView() {
+  const { filters } = useTaskFilters();
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("workspace") ?? "";
 
-  const { data: tasks, isLoading: tasksLoading } = useTasks(workspaceId);
+  const { data: tasks, isLoading: tasksLoading } = useTasks(
+    workspaceId,
+    filters
+  );
   const { data: columns, isLoading: columnsLoading } = useColumns(workspaceId);
 
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isColumnFormOpen, setIsColumnFormOpen] = useState(false);
 
   const { mutate: deleteTask } = useDeleteTask();
 
@@ -116,17 +122,13 @@ export function TaskListView() {
     setIsDeleteDialogOpen(false);
   };
 
-  const handleColumnFormSuccess = () => {
-    setIsColumnFormOpen(false);
-  };
-
   return (
     <DndContext
       sensors={sensors}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
-      <div className="space-y-6">
+      <div className="space-y-6 mb-8">
         <div className="flex items-center justify-between">
           <div className="text-lg font-semibold">
             Tasks ({tasks?.length || 0})
@@ -170,17 +172,6 @@ export function TaskListView() {
           })}
         </SortableContext>
 
-        <div className="mt-6">
-          <Button
-            variant="outline"
-            className="w-full h-16 border-dashed border-2 hover:border-primary/50 hover:bg-muted/50 transition-colors"
-            onClick={() => setIsColumnFormOpen(true)}
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Nieuwe kolom toevoegen
-          </Button>
-        </div>
-
         <DeleteConfirmDialog
           isOpen={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
@@ -188,15 +179,6 @@ export function TaskListView() {
           itemType="taak"
           itemCount={selectedTasks.length}
         />
-
-        <Dialog open={isColumnFormOpen} onOpenChange={setIsColumnFormOpen}>
-          <DialogContent>
-            <ColumnForm
-              workspaceId={workspaceId}
-              closeDialog={handleColumnFormSuccess}
-            />
-          </DialogContent>
-        </Dialog>
       </div>
 
       <DragOverlay>

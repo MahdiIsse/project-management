@@ -153,23 +153,24 @@ export function AssigneeSelector({
               </Avatar>
             )}
 
-            {/* Add Button (always visible) */}
-            <Avatar
-              className={cn(
-                "h-8 w-8 border-2 border-dashed border-muted-foreground/30 bg-muted/50 hover:bg-muted transition-colors",
-                "group-hover:border-primary/50 group-hover:bg-primary/5",
-                variant === "compact" && "h-6 w-6"
-              )}
-            >
-              <AvatarFallback>
-                <Plus
-                  className={cn(
-                    "h-4 w-4 text-muted-foreground group-hover:text-primary",
-                    variant === "compact" && "h-3 w-3"
-                  )}
-                />
-              </AvatarFallback>
-            </Avatar>
+            {taskAssignees.length === 0 && (
+              <Avatar
+                className={cn(
+                  "h-8 w-8 border-2 border-dashed border-muted-foreground/30 bg-muted/50 hover:bg-muted transition-colors",
+                  "group-hover:border-primary/50 group-hover:bg-primary/5",
+                  variant === "compact" && "h-6 w-6"
+                )}
+              >
+                <AvatarFallback>
+                  <Plus
+                    className={cn(
+                      "h-4 w-4 text-muted-foreground group-hover:text-primary",
+                      variant === "compact" && "h-3 w-3"
+                    )}
+                  />
+                </AvatarFallback>
+              </Avatar>
+            )}
           </div>
         </PopoverTrigger>
 

@@ -20,6 +20,9 @@ import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
+  DialogHeader,
+  DialogDescription,
+  DialogTitle,
 } from "@/shared";
 import {
   GripVertical,
@@ -34,7 +37,7 @@ import { useDeleteColumn } from "@/features/task-management/hooks";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/shared";
-import { getColumnColorsByBorder } from "@/shared/lib/utils/colors";
+import { getColumnColorByBorder } from "@/features/task-management/utils/columnColors";
 import { DeleteConfirmDialog } from "../shared";
 
 interface StatusTableProps {
@@ -74,7 +77,7 @@ export function StatusTable({
   };
 
   // 🚀 NIEUW: Kleuren ophalen met de helper
-  const { columnBg, columnText } = getColumnColorsByBorder(column.border);
+  const { columnBg, columnText } = getColumnColorByBorder(column.border);
 
   const handleTaskNameClick = (task: Task) => setTaskToEdit(task);
 
@@ -119,7 +122,16 @@ export function StatusTable({
         )}
       >
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <Table>
+          <Table className="table-fixed">
+            <colgroup>
+              <col className="w-12" />
+              <col className="w-64" />
+              <col className="w-24" />
+              <col className="w-32" />
+              <col className="w-20" />
+              <col className="w-28" />
+              <col className="w-32" />
+            </colgroup>
             <TableHeader>
               {/* 2. De Gekleurde, Klikbare Header */}
               <CollapsibleTrigger asChild>
@@ -133,7 +145,7 @@ export function StatusTable({
                           className="cursor-grab active:cursor-grabbing p-2"
                           {...attributes}
                           {...listeners}
-                          onClick={(e) => e.stopPropagation()} // Voorkom inklappen bij drag
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <GripVertical className="h-4 w-4" />
                         </span>
@@ -190,17 +202,17 @@ export function StatusTable({
               </CollapsibleTrigger>
               {/* 3. De Kolomtitels */}
               <TableRow className="border-b bg-muted/30 text-xs uppercase hover:bg-muted/40">
-                <TableHead className="w-12">
+                <TableHead>
                   <Checkbox
                     checked={isAllSelected}
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead className="w-64">Task</TableHead>
-                <TableHead className="w-32">Created</TableHead>
-                <TableHead className="w-40">Due</TableHead>
-                <TableHead className="w-24">Priority</TableHead>
-                <TableHead className="w-32">Assignee</TableHead>
+                <TableHead>Task</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Due</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Assignee</TableHead>
                 <TableHead>Tags</TableHead>
               </TableRow>
             </TableHeader>
@@ -225,6 +237,16 @@ export function StatusTable({
       {/* Dialogs blijven hier, buiten de tabel */}
       <Dialog open={isColumnFormOpen} onOpenChange={setIsColumnFormOpen}>
         <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {column ? "Kolom bewerken" : "Nieuwe kolom"}
+            </DialogTitle>
+            <DialogDescription>
+              {column
+                ? `Bewerk de instellingen van kolom "${column.title}"`
+                : "Maak een nieuwe kolom aan voor je taken"}
+            </DialogDescription>
+          </DialogHeader>
           <ColumnForm
             workspaceId={workspaceId}
             columnToEdit={column}
@@ -237,6 +259,14 @@ export function StatusTable({
         onOpenChange={(open) => !open && setTaskToEdit(null)}
       >
         <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Taak bewerken</DialogTitle>
+            <DialogDescription>
+              {taskToEdit
+                ? `Bewerk de details van "${taskToEdit.title}"`
+                : "Taak bewerken"}
+            </DialogDescription>
+          </DialogHeader>
           {taskToEdit && (
             <TaskForm
               workspaceId={workspaceId}

@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { getTasks, createTask, updateTask, deleteTask, updateTasksPositions } from "@/features/task-management/actions"
 import { TaskSchemaValues } from "@/features/task-management/schemas"
-import type { Task } from "@/features/task-management/types"
+import type { Task, TaskFilterParams } from "@/features/task-management/types"
 
-export function useTasks(workspaceId: string){
+export function useTasks(workspaceId: string, filters?: TaskFilterParams){
   return useQuery({
-    queryKey: ["tasks", workspaceId],
-    queryFn: ()=> getTasks(workspaceId),
+    queryKey: ["tasks", workspaceId, filters],
+    queryFn: ()=> getTasks(workspaceId, filters),
     enabled: !!workspaceId
   })
 }
@@ -26,7 +26,7 @@ export function useUpdateTask(){
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ data, taskId}: {data: Partial<Task>, taskId: string}) => {
+    mutationFn: async ({ data, taskId}: {data: Partial<TaskSchemaValues>, taskId: string}) => {
       return updateTask(data, taskId)
     },
     onSuccess: ()=> queryClient.invalidateQueries({queryKey: ["tasks"]})

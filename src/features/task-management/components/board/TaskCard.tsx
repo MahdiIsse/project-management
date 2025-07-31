@@ -6,7 +6,16 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { Task } from "@/features/task-management";
-import { cn, Button, Dialog, DialogTrigger, DialogContent } from "@/shared";
+import {
+  cn,
+  Button,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogDescription,
+  DialogTitle,
+} from "@/shared";
 import { TaskForm } from "@/features/task-management";
 import { useUpdateTask } from "@/features/task-management";
 import {
@@ -86,6 +95,12 @@ export function TaskCard({
                 </Button>
               </DialogTrigger>
               <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+                <DialogHeader>
+                  <DialogTitle>Taak Bewerken</DialogTitle>
+                  <DialogDescription>
+                    Bewerk de details van &quot;{task.title}&quot;
+                  </DialogDescription>
+                </DialogHeader>
                 <TaskForm
                   workspaceId={workspaceId}
                   taskToEdit={task}
@@ -138,7 +153,7 @@ export function TaskCard({
             currentDate={task.dueDate}
             onDateChange={(date) =>
               updateTask({
-                data: { dueDate: date.toDateString() },
+                data: { dueDate: date },
                 taskId: task.id,
               })
             }

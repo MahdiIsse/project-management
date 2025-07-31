@@ -17,10 +17,8 @@ export function DashboardContainer() {
         return <TaskListView />;
       case "board":
         return <TaskBoard />;
-      case "calendar":
-        return <div>Kalenderweergave nog niet geïmplementeerd.</div>;
       default:
-        return <TaskBoard />;
+        return <TaskListView />;
     }
   };
 
@@ -30,7 +28,7 @@ export function DashboardContainer() {
         currentView={currentView}
         onViewChange={setCurrentView}
       />
-      <div className="flex-1 ">{renderView()}</div>
+      <div className="flex-1">{renderView()}</div>
     </div>
   );
 }

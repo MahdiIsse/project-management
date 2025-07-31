@@ -29,8 +29,7 @@ export function TaskTableRow({
     <TableRow
       className={`hover:bg-muted/50 ${isSelected ? "bg-muted/30" : ""}`}
     >
-      {/* Checkbox */}
-      <TableCell className="w-12">
+      <TableCell>
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => onSelect(task.id, checked as boolean)}
@@ -38,7 +37,7 @@ export function TaskTableRow({
       </TableCell>
 
       {/* Task Title */}
-      <TableCell className="w-64">
+      <TableCell>
         <Button
           variant="ghost"
           className="h-auto p-0 font-medium text-left hover:bg-muted/50 transition-colors"
@@ -49,17 +48,17 @@ export function TaskTableRow({
       </TableCell>
 
       {/* Created Date */}
-      <TableCell className="w-32 text-sm">
+      <TableCell className="text-sm">
         {new Date(task.createdAt || Date.now()).toLocaleDateString()}
       </TableCell>
 
       {/* Due Date - Inline Editor */}
-      <TableCell className="w-40">
+      <TableCell>
         <DueDatePicker
           currentDate={task.dueDate}
           onDateChange={(date) =>
             updateTask({
-              data: { dueDate: date.toDateString() },
+              data: { dueDate: date },
               taskId: task.id,
             })
           }
@@ -68,7 +67,7 @@ export function TaskTableRow({
       </TableCell>
 
       {/* Priority - Inline Editor */}
-      <TableCell className="w-24">
+      <TableCell>
         <PrioritySelector
           currentPriority={task.priority}
           onPriorityChange={(priority) =>
@@ -82,7 +81,7 @@ export function TaskTableRow({
       </TableCell>
 
       {/* Assignees - Inline Editor */}
-      <TableCell className="w-32">
+      <TableCell>
         <AssigneeSelector
           taskId={task.id}
           maxVisible={2}
@@ -92,7 +91,7 @@ export function TaskTableRow({
       </TableCell>
 
       {/* Tags - Inline Editor */}
-      <TableCell className="w-40">
+      <TableCell>
         <TagSelector
           taskId={task.id}
           maxVisible={2}

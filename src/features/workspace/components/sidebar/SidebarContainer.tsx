@@ -61,13 +61,6 @@ import {
 import Image from "next/image";
 import { NavUser } from "./nav-user";
 
-const navItems = [
-  { title: "Home", url: "/dashboard", icon: Home },
-  { title: "My Tasks", url: "/dashboard", icon: CheckSquare },
-  { title: "Goals", url: "/dashboard", icon: BarChart2 },
-  { title: "Members", url: "/dashboard", icon: Users },
-];
-
 interface SidebarContainerProps {
   user: User | null;
   logout: () => Promise<void>;
@@ -176,26 +169,6 @@ export function SidebarContainer({ user, logout }: SidebarContainerProps) {
 
         <SidebarContent className="px-2 py-2 bg-background">
           <SidebarGroup className="px-2">
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className="h-9 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors"
-                    >
-                      <Link href={`${item.url}?${searchParams.toString()}`}>
-                        <item.icon className="h-6 w-6 shrink-0" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarGroup className="mt-6 px-2">
             <div className="flex items-center justify-between px-3 pb-2">
               <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">
                 Workspaces

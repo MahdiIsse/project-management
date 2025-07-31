@@ -23,13 +23,14 @@ import {
   useColumnDragAndDrop,
   useTasks,
   useTaskDragAndDrop,
+  useTaskFilters,
 } from "@/features/task-management";
 import { TaskColumn, TaskCard } from "@/features/task-management";
 import { ColumnForm } from "@/features/task-management";
 
 export function TaskBoard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+  const { filters } = useTaskFilters();
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("workspace") ?? "";
 
@@ -38,7 +39,7 @@ export function TaskBoard() {
     isLoading: columnsLoading,
     isError: columnsError,
   } = useColumns(workspaceId);
-  const { data: tasks = [] } = useTasks(workspaceId);
+  const { data: tasks = [] } = useTasks(workspaceId, filters);
 
   // Task drag and drop
   const {
@@ -161,7 +162,7 @@ export function TaskBoard() {
       onDragOver={combinedDragOver}
     >
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col mb-6">
           <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:overflow-x-auto">
             <SortableContext
               items={displayColumns.map((column) => column.id)}
@@ -178,29 +179,8 @@ export function TaskBoard() {
                 />
               ))}
             </SortableContext>
-
-            <DialogTrigger asChild>
-              <div className="flex h-fit min-h-[200px] flex-shrink-0 flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/10 p-6 text-center transition-all duration-200 hover:border-muted-foreground/40 hover:bg-muted/20 hover:shadow-sm lg:w-64 cursor-pointer">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Plus className="h-5 w-5" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="font-medium text-foreground">Nieuwe kolom</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Voeg een kolom toe aan je board
-                  </p>
-                </div>
-              </div>
-            </DialogTrigger>
           </div>
         </div>
-
-        <DialogContent>
-          <ColumnForm
-            workspaceId={workspaceId}
-            closeDialog={() => setIsDialogOpen(false)}
-          />
-        </DialogContent>
       </Dialog>
 
       <DragOverlay>
