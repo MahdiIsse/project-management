@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useTheme } from "next-themes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "@supabase/supabase-js";
 import {
@@ -32,8 +30,6 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
   SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   SidebarGroupAction,
   Dialog,
   DialogContent,
@@ -47,17 +43,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  cn,
 } from "@/shared";
-import {
-  Home,
-  CheckSquare,
-  BarChart2,
-  Users,
-  Moon,
-  Sun,
-  Plus,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import Image from "next/image";
 import { NavUser } from "./nav-user";
 
@@ -67,7 +54,6 @@ interface SidebarContainerProps {
 }
 
 export function SidebarContainer({ user, logout }: SidebarContainerProps) {
-  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: workspaces = [] } = useWorkspaces();
@@ -155,7 +141,7 @@ export function SidebarContainer({ user, logout }: SidebarContainerProps) {
     <>
       <Sidebar className="border-r bg-background">
         <SidebarHeader className="border-b border-border/40 bg-background">
-          <div className="flex items-center justify-between py-2 px-4">
+          <div className="flex items-center py-2 px-6">
             <div className="h-[50px] w-[160px] relative font-bold text-lg flex items-center">
               <Image
                 src="/Logo-White.png"
@@ -167,7 +153,7 @@ export function SidebarContainer({ user, logout }: SidebarContainerProps) {
           </div>
         </SidebarHeader>
 
-        <SidebarContent className="px-2 py-2 bg-background">
+        <SidebarContent className="px-2 bg-background">
           <SidebarGroup className="px-2">
             <div className="flex items-center justify-between px-3 pb-2">
               <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">
