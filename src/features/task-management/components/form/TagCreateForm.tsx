@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/shared";
 import { cn } from "@/shared";
-import { Check, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   TAG_COLORS,
   getTagColorByName,

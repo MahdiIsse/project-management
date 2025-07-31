@@ -35,11 +35,13 @@ import { Workspace } from "@/features/workspace/types";
 interface WorkspaceFormProps {
   workspaceToEdit?: Workspace;
   onClose: () => void;
+  onWorkspaceCreated?: (workspaceId: string) => void;
 }
 
 export function WorkspaceForm({
   workspaceToEdit,
   onClose,
+  onWorkspaceCreated,
 }: WorkspaceFormProps) {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const isEditMode = Boolean(workspaceToEdit);
@@ -72,9 +74,10 @@ export function WorkspaceForm({
       );
     } else {
       createWorkspace(data, {
-        onSuccess: () => {
+        onSuccess: (newWorkspace) => {
           form.reset();
           onClose();
+          onWorkspaceCreated?.(newWorkspace.id);
         },
       });
     }

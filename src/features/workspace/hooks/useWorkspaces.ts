@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { getWorkspaces, createWorkspace, updateWorkspace, deleteWorkspace, updateWorkspacesPositions } from "@/features/workspace"
-import type { Workspace } from "@/features/workspace"
+import type { Workspace, WorkspaceSchemaValues } from "@/features/workspace"
 
 export function useWorkspaces() {
   return useQuery({
@@ -13,7 +13,7 @@ export function useCreateWorkspace() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: Workspace) => {
+    mutationFn: async (data: WorkspaceSchemaValues): Promise<Workspace> => {
      return createWorkspace(data)
     },
     onSuccess: ()=> queryClient.invalidateQueries({queryKey: ["workspaces"]})
@@ -24,7 +24,7 @@ export function useUpdateWorkspace() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({id, data}: {id: string, data: Partial<Workspace> }) => {
+    mutationFn: async ({id, data}: {id: string, data: Partial<WorkspaceSchemaValues> }) => {
      return updateWorkspace(id, data)
     },
     onSuccess: ()=> {

@@ -225,6 +225,7 @@ export function SidebarContainer({ user, logout }: SidebarContainerProps) {
           <WorkspaceForm
             workspaceToEdit={workspaceToEdit}
             onClose={handleWorkspaceDialogClose}
+            onWorkspaceCreated={handleWorkspaceChange}
           />
         </DialogContent>
       </Dialog>

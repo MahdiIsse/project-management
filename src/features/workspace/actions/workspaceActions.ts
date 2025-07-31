@@ -1,9 +1,10 @@
 "use server"
 
 import { createServerClient } from "@/shared/lib/supabase/server";
-import type { Workspace } from "@/features/workspace";
+import type { Workspace, WorkspaceSchemaValues } from "@/features/workspace";
 import { getAuthenticatedUser } from "@/features/auth";
 import { mapWorkspace } from "@/features/workspace";
+import { COLUMN_COLORS } from "@/features/task-management/utils";
 
 export async function getWorkspaces(): Promise<Workspace[]> {
   const supabase = await createServerClient()
@@ -20,7 +21,7 @@ export async function getWorkspaces(): Promise<Workspace[]> {
 }
 
 
-export async function createWorkspace(data: Workspace) {
+export async function createWorkspace(data: WorkspaceSchemaValues): Promise<Workspace> {
   const supabase = await createServerClient()
   const user = await getAuthenticatedUser()
 
@@ -34,14 +35,33 @@ export async function createWorkspace(data: Workspace) {
 
   const newPosition = maxData && maxData.position !== null && maxData.position !== undefined ? maxData.position + 1 : 0
 
-  const {error} = await supabase
+  const {data: newWorkspace, error: workspaceError} = await supabase
     .from("workspaces")
-    .insert({...data, owner_id: user.id, position: newPosition})
+    .insert({
+      ...data, 
+      owner_id: user.id, 
+      position: newPosition
+    })
+    .select("*")
+    .single()
 
-  if (error) throw error
+  if (workspaceError) throw workspaceError
+
+  const {error: columnError} = await supabase
+    .from("columns")
+    .insert({
+      title: "Todos",
+      border: COLUMN_COLORS[0].border,
+      position: 0,
+      workspace_id: newWorkspace.id
+    })
+
+   if (columnError) throw columnError 
+
+   return mapWorkspace(newWorkspace)
 }
 
-export async function updateWorkspace(id: string, data: Partial<Workspace>) {
+export async function updateWorkspace(id: string, data: Partial<WorkspaceSchemaValues>) {
   const supabase = await createServerClient()
   const user = await getAuthenticatedUser()
 
