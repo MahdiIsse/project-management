@@ -249,7 +249,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      setup_user_onboarding: {
+        Args: { user_id: string }
+        Returns: Json
+      }
+      cleanup_user_data: {
+        Args: { user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

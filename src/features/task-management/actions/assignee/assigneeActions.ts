@@ -23,7 +23,8 @@ export async function getAssignees(): Promise<Assignee[]> {
 
 async function uploadAvatar(file: File) {
   const supabase = await createServerClient()
-  const filePath = `public/${Date.now()}_${file.name}`
+  const user = await getAuthenticatedUser()
+  const filePath = `public/${user.id}/${Date.now()}_${file.name}`
 
   const {error: uploadError} = await supabase.storage
     .from("avatars")

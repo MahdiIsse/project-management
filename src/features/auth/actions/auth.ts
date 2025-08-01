@@ -4,6 +4,7 @@ import {revalidatePath} from "next/cache"
 import {redirect} from "next/navigation"
 import {createServerClient} from "@/shared/lib/supabase/server"
 import {LoginSchemaValues, SignUpSchemaValues} from "@/features/auth/schemas/auth"
+import { setupDummyDataForNewUser } from "./onboarding"
 
 export async function login(data: LoginSchemaValues) {
   const supabase = await createServerClient()
@@ -15,7 +16,7 @@ export async function login(data: LoginSchemaValues) {
   }
 
   revalidatePath("/", "layout")
-  redirect("/dashboard")
+  redirect("/dashboard?newUser=true")
 }
 
 
@@ -45,7 +46,7 @@ export async function signup(data: SignUpSchemaValues) {
 
   }
 
-  const {error} = await supabase.auth.signUp({
+  const {data: authData, error} = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
     options: {
@@ -60,6 +61,15 @@ export async function signup(data: SignUpSchemaValues) {
     redirect("/error")
   }
   
+  if (authData.user) {
+    try {
+      await setupDummyDataForNewUser(authData.user.id);
+    } catch (error) {
+      console.error("Dummy data setup failed:", error);
+      // Continue with signup - dummy data is niet kritiek
+    }
+  }
+
   revalidatePath("/", "layout")
   redirect("/dashboard")
 }

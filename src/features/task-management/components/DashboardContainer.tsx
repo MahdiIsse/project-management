@@ -1,15 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DashboardHeader,
   TaskBoard,
   TaskListView,
 } from "@/features/task-management";
 import type { ViewMode } from "@/features/task-management";
+import { TestingButtons } from "./layout/DeleteUser";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 
 export function DashboardContainer() {
   const [currentView, setCurrentView] = useState<ViewMode>("list");
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const isNewUser = searchParams?.get("newUser") === "true";
+    if (isNewUser) {
+      queryClient.invalidateQueries();
+    }
+  }, [queryClient, searchParams]);
 
   const renderView = () => {
     switch (currentView) {
@@ -24,6 +36,7 @@ export function DashboardContainer() {
 
   return (
     <div className="h-full flex flex-col p-6 space-y-6">
+      {/* <TestingButtons /> */}
       <DashboardHeader
         currentView={currentView}
         onViewChange={setCurrentView}
