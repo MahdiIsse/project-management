@@ -39,8 +39,12 @@ export function ColumnForm({
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const isEditMode = Boolean(columnToEdit);
 
-  const { mutate: createColumn } = useCreateColumn();
-  const { mutate: updateColumn } = useUpdateColumn();
+  const { mutate: createColumn, isPending: isCreatePending } =
+    useCreateColumn();
+  const { mutate: updateColumn, isPending: isUpdatePending } =
+    useUpdateColumn();
+
+  const isPending = isEditMode ? isUpdatePending : isCreatePending;
 
   const form = useForm<ColumnSchemaValues>({
     resolver: zodResolver(columnSchema),
@@ -51,7 +55,7 @@ export function ColumnForm({
         }
       : {
           title: "",
-          border: COLUMN_COLORS[0].border, // Default naar eerste kleur
+          border: COLUMN_COLORS[0].border,
         },
   });
 
@@ -93,6 +97,7 @@ export function ColumnForm({
                 <Input
                   placeholder="Vul hier de naam van de kolom in..."
                   {...field}
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
@@ -120,6 +125,7 @@ export function ColumnForm({
                       <Button
                         variant="outline"
                         className="w-full justify-start text-left h-10 px-3"
+                        disabled={isPending}
                       >
                         <div className="flex items-center gap-3">
                           <div
@@ -160,6 +166,7 @@ export function ColumnForm({
                               setIsColorPickerOpen(false);
                             }}
                             title={color.name}
+                            disabled={isPending}
                           />
                         ))}
                       </div>
@@ -176,10 +183,21 @@ export function ColumnForm({
         />
 
         <div className="flex gap-2 pt-4">
-          <Button type="submit" className="flex-1">
-            {isEditMode ? "Pas aan" : "Maak aan"}
+          <Button type="submit" className="flex-1" disabled={isPending}>
+            {isPending
+              ? isEditMode
+                ? "Aanpassen..."
+                : "Aanmaken..."
+              : isEditMode
+              ? "Pas aan"
+              : "Maak aan"}
           </Button>
-          <Button type="button" variant="outline" onClick={closeDialog}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={closeDialog}
+            disabled={isPending}
+          >
             Annuleren
           </Button>
         </div>

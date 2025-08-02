@@ -3,7 +3,7 @@
 import { Task } from "@/features/task-management/types"
 import { useUpdateTasksPositions } from "@/features/task-management/hooks/task"
 import { useState } from "react"
-import {  DragOverEvent, DragStartEvent } from "@dnd-kit/core"
+import { DragOverEvent, DragStartEvent } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 
 interface UseDragAndDropProps {
@@ -14,13 +14,11 @@ interface UseDragAndDropProps {
 export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) {
   const { mutate: updateTasksPositions } = useUpdateTasksPositions(workspaceId)
   const [localTasks, setLocalTasks] = useState<Task[] | null>(null)
-  // ✅ activeTask state naar de hook verplaatst
   const [activeTask, setActiveTask] = useState<Task | null>(null)
 
   const displayTasks = localTasks || tasks
 
   const handleDragStart = (event: DragStartEvent) => {
-    // ✅ Zoek de dragging task in displayTasks
     const draggingTask = displayTasks.find(
       (task) => task.id === event.active.id
     );
@@ -46,7 +44,6 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
 
     if (activeIndex === -1) return;
 
-    // 🎯 Case 1: Task over task
     if (isActiveATask && isOverATask && overIndex !== -1) {
       const activeTask = displayTasks[activeIndex];
       const overTask = displayTasks[overIndex];
@@ -54,7 +51,7 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
       const newTasks = [...displayTasks]
 
       if (activeTask.columnId !== overTask.columnId) {
-        newTasks[activeIndex] = {...activeTask, columnId: overTask.columnId}
+        newTasks[activeIndex] = { ...activeTask, columnId: overTask.columnId }
       }
 
       const reorderedTasks = arrayMove(newTasks, activeIndex, overIndex)
@@ -62,7 +59,6 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
       return;
     }
 
-    // 🎯 Case 2: Task over column
     const isOverAColumn = over.data.current?.type === "Column"
 
     if (isActiveATask && isOverAColumn) {
@@ -71,7 +67,7 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
 
       if (activeTaskData.columnId !== targetColumnId) {
         const newTasks = [...displayTasks];
-        newTasks[activeIndex] = {...activeTaskData, columnId: targetColumnId};
+        newTasks[activeIndex] = { ...activeTaskData, columnId: targetColumnId };
         setLocalTasks(newTasks)
       }
     }
@@ -91,7 +87,7 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
       columnId: task.columnId
     }))
 
-    updateTasksPositions({updates, optimisticTasks: localTasks})
+    updateTasksPositions({ updates, optimisticTasks: localTasks })
   }
 
   return {
@@ -99,6 +95,6 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
     handleDragStart,
     handleDragOver,
     displayTasks,
-    activeTask // ✅ Return activeTask voor DragOverlay
+    activeTask
   }
 }

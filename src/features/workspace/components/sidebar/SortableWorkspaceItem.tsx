@@ -112,7 +112,6 @@ export function SortableWorkspaceItem({
                 "hover:bg-white/10 hover:scale-110 active:scale-95",
                 isActive ? "hover:bg-white/20" : "hover:bg-accent/50"
               )}
-              onClick={(e) => e.stopPropagation()}
             >
               <MoreHorizontal className="h-4 w-4" />
             </button>

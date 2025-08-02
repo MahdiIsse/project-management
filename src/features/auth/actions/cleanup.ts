@@ -16,8 +16,6 @@ interface CleanupResponse {
 }
 
 export async function cleanupUserData() {
-  console.log('🧹 Starting user data cleanup...')
-  
   const user = await getAuthenticatedUser()
   const supabase = await createServerClient()
   
@@ -26,17 +24,14 @@ export async function cleanupUserData() {
   })
 
   if (error) {
-    console.error('❌ Cleanup failed:', error)
     throw error
   }
   
   const response = data as unknown as CleanupResponse
   
   if (!response?.success) {
-    console.error('❌ Cleanup returned failure:', response)
-    throw new Error(response?.error || 'Unknown cleanup error')
+    throw new Error(response?.error || 'Onbekende cleanup fout')
   }
   
-  console.log('🎉 Cleanup completed successfully:', response)
   return response
 }

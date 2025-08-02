@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SquarePen } from "lucide-react";
+import { Trash2, Ellipsis } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -10,14 +10,25 @@ import {
   cn,
   Button,
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogDescription,
   DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/shared";
 import { TaskForm } from "@/features/task-management";
-import { useUpdateTask } from "@/features/task-management";
+import { useUpdateTask, useDeleteTask } from "@/features/task-management";
 import {
   PrioritySelector,
   DueDatePicker,
@@ -39,9 +50,10 @@ export function TaskCard({
   index,
 }: TaskCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { mutate: updateTask } = useUpdateTask();
+  const { mutate: deleteTask, isPending: isDeleting } = useDeleteTask();
 
-  // ✅ useSortable hook van SortableTaskCard
   const {
     attributes,
     listeners,
@@ -54,16 +66,34 @@ export function TaskCard({
     data: { type: "Task", columnId, index, task },
   });
 
-  // ✅ Styling van SortableTaskCard
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0 : 1, // Volledig transparant tijdens drag (DragOverlay toont preview)
+    opacity: isDragging ? 0 : 1,
     zIndex: isDragging ? 50 : 1,
   };
 
+  const handleDeleteTask = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCardClick = () => {
+    setIsDialogOpen(true);
+  };
+
+  const confirmDeleteTask = () => {
+    deleteTask(task.id, {
+      onSuccess: () => {
+        setIsDeleteDialogOpen(false);
+      },
+    });
+  };
+
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
+
   return (
-    // ✅ Wrapper div met dnd-kit properties
     <div
       ref={setNodeRef}
       {...listeners}
@@ -71,50 +101,47 @@ export function TaskCard({
       style={style}
       className={cn(
         "relative transition-all duration-200 cursor-grab",
-        "hover:scale-[1.02] hover:shadow-lg", // ✅ Subtle hover effect
+        "hover:scale-[1.02] hover:shadow-lg",
         isDragging && "cursor-grabbing"
       )}
     >
-      {/* ✅ Bestaande TaskCard content blijft hetzelfde */}
       <div className="w-full bg-card text-card-foreground rounded-xl border shadow-sm p-6">
-        {/* Header */}
         <div className="mb-4">
           <div className="relative group flex items-start justify-between">
-            <h3 className="font-bold text-lg leading-none mb-2 pr-12">
+            <h3
+              className="font-bold text-lg leading-none mb-2 pr-12 cursor-pointer hover:text-primary transition-colors"
+              onClick={handleCardClick}
+            >
               {task.title}
             </h3>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
+                  data-dropdown-trigger
                   variant="ghost"
                   size="sm"
-                  className="opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out absolute top-0 right-0 h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary hover:scale-105"
+                  className="opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out absolute top-0 right-0 h-8 w-8 text-destructive hover:text-destructive hover:scale-105"
                 >
-                  <SquarePen className="h-4 w-4" />
+                  <Ellipsis className="h-4 w-4" />
                 </Button>
-              </DialogTrigger>
-              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-                <DialogHeader>
-                  <DialogTitle>Taak Bewerken</DialogTitle>
-                  <DialogDescription>
-                    Bewerk de details van &quot;{task.title}&quot;
-                  </DialogDescription>
-                </DialogHeader>
-                <TaskForm
-                  workspaceId={workspaceId}
-                  taskToEdit={task}
-                  closeDialog={() => setIsDialogOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={handleDeleteTask}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Taak verwijderen
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           {task.description && (
             <p className="text-muted-foreground text-sm">{task.description}</p>
           )}
         </div>
 
-        {/* Content */}
         <div className="flex justify-between items-start mb-4">
           <div className="flex-1 min-w-0">
             <TagSelector
@@ -137,10 +164,8 @@ export function TaskCard({
           </div>
         </div>
 
-        {/* Separator */}
         <div className="border-t my-4" />
 
-        {/* Footer */}
         <div className="flex justify-between items-center text-gray-500">
           <PrioritySelector
             currentPriority={task.priority}
@@ -160,6 +185,46 @@ export function TaskCard({
           />
         </div>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Taak Bewerken</DialogTitle>
+            <DialogDescription>
+              Bewerk de details van &quot;{task.title}&quot;
+            </DialogDescription>
+          </DialogHeader>
+          <TaskForm
+            workspaceId={workspaceId}
+            taskToEdit={task}
+            closeDialog={() => setIsDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={closeDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Taak verwijderen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Weet je zeker dat je &quot;{task.title}&quot; wilt verwijderen?
+              Deze actie kan niet ongedaan worden gemaakt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={closeDeleteDialog}>
+              Annuleren
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteTask}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Verwijderen..." : "Verwijderen"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -31,20 +31,18 @@ export function FilterAssigneeSelector({
 
   const { data: allAssignees = [] } = useAssignees();
 
-  // Filter assignees based on search
   const filteredAssignees = allAssignees.filter((assignee) =>
     assignee.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Get selected assignees for display
   const selectedAssignees = allAssignees.filter((assignee) =>
     value.includes(assignee.id)
   );
 
   const handleToggle = (assigneeId: string) => {
     const newValue = value.includes(assigneeId)
-      ? value.filter((id) => id !== assigneeId) // Remove
-      : [...value, assigneeId]; // Add
+      ? value.filter((id) => id !== assigneeId)
+      : [...value, assigneeId];
 
     onChange(newValue);
   };
@@ -65,7 +63,6 @@ export function FilterAssigneeSelector({
                 <span className="text-sm">
                   {selectedAssignees.length} geselecteerd
                 </span>
-                {/* Show first few avatars */}
                 <div className="flex -space-x-1 ml-2">
                   {selectedAssignees.slice(0, 3).map((assignee) => (
                     <Avatar key={assignee.id} className="h-5 w-5 border">
@@ -89,7 +86,6 @@ export function FilterAssigneeSelector({
 
       <PopoverContent className="w-80 p-0" align="start">
         <div className="p-4 space-y-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -99,8 +95,6 @@ export function FilterAssigneeSelector({
               className="pl-9"
             />
           </div>
-
-          {/* Assignee List */}
           <div className="space-y-1 max-h-64 overflow-y-auto">
             {filteredAssignees.map((assignee) => (
               <div
@@ -122,8 +116,6 @@ export function FilterAssigneeSelector({
               </div>
             ))}
           </div>
-
-          {/* Clear button */}
           {value.length > 0 && (
             <Button
               variant="outline"

@@ -84,8 +84,10 @@ export function TaskForm({
           },
   });
 
-  const { mutate: updateTask } = useUpdateTask();
-  const { mutate: createTask } = useCreateTask();
+  const { mutate: updateTask, isPending: isUpdatePending } = useUpdateTask();
+  const { mutate: createTask, isPending: isCreatePending } = useCreateTask();
+
+  const isPending = isEditMode ? isUpdatePending : isCreatePending;
 
   const onSubmit = (data: TaskSchemaValues) => {
     if (isEditMode) {
@@ -117,6 +119,7 @@ export function TaskForm({
                 <Input
                   placeholder="Vul hier de titel van de taak in..."
                   {...field}
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
@@ -134,6 +137,7 @@ export function TaskForm({
                 <Textarea
                   placeholder="Vul hier de beschrijving in..."
                   {...field}
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
@@ -150,15 +154,23 @@ export function TaskForm({
                 <FormLabel className="text-sm font-medium">
                   Prioriteit
                 </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isPending}
+                >
                   <FormControl>
-                    <SelectTrigger className="h-10">
+                    <SelectTrigger className="h-10" disabled={isPending}>
                       <SelectValue placeholder="Selecteer prioriteit" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {priorityOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        disabled={isPending}
+                      >
                         <span className={option.color}>{option.label}</span>
                       </SelectItem>
                     ))}
@@ -175,15 +187,23 @@ export function TaskForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-medium">Status</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isPending}
+                >
                   <FormControl>
-                    <SelectTrigger className="h-10">
+                    <SelectTrigger className="h-10" disabled={isPending}>
                       <SelectValue placeholder="Selecteer status" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {columns?.map((column) => (
-                      <SelectItem key={column.id} value={column.id}>
+                      <SelectItem
+                        key={column.id}
+                        value={column.id}
+                        disabled={isPending}
+                      >
                         <span className={getColumnTextStyle(column.border)}>
                           {column.title}
                         </span>
@@ -212,6 +232,7 @@ export function TaskForm({
                         "w-full pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
                       )}
+                      disabled={isPending}
                     >
                       {field.value ? (
                         format(field.value, "PPP", { locale: nl })
@@ -230,9 +251,7 @@ export function TaskForm({
                       field.onChange(date);
                       setIsPopoverOpen(false);
                     }}
-                    disabled={(date) =>
-                      date < new Date(new Date().setHours(0, 0, 0, 0))
-                    }
+                    disabled={isPending}
                   />
                 </PopoverContent>
               </Popover>
@@ -276,7 +295,11 @@ export function TaskForm({
         </div>
 
         <div className="flex gap-3 pt-4">
-          <Button type="submit" className="flex-1 h-10 font-medium">
+          <Button
+            type="submit"
+            className="flex-1 h-10 font-medium"
+            disabled={isPending}
+          >
             {isEditMode ? "Wijzigingen opslaan" : "Taak aanmaken"}
           </Button>
           <Button
@@ -284,6 +307,7 @@ export function TaskForm({
             variant="outline"
             onClick={closeDialog}
             className="px-6 h-10"
+            disabled={isPending}
           >
             Annuleren
           </Button>

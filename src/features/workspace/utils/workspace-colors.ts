@@ -82,7 +82,6 @@ export function getWorkspaceColorProps(name: string | null | undefined) {
   return color || defaultColor;
 } 
 
-// Add this helper function at the top of the component
 export const getWorkspaceBorderClass = (colorName: string | undefined) => {
   switch (colorName) {
     case "Oranje": return "border-l-orange-500";

@@ -15,9 +15,9 @@ interface DeleteConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  itemType: string; // bv. "taak", "assignee", "kolom"
-  itemName?: string; // bv. "Jan Smit" (voor enkelvoud)
-  itemCount?: number; // bv. 5 (voor meervoud)
+  itemType: string;
+  itemName?: string;
+  itemCount?: number;
 }
 
 export function DeleteConfirmDialog({

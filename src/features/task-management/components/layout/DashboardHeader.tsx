@@ -47,7 +47,6 @@ export function DashboardHeader({
 
   const { data: workspaces, isLoading: isLoadingWorkspaces } = useWorkspaces();
 
-  // Auto-select first workspace if none selected
   useEffect(() => {
     if (
       !isLoadingWorkspaces &&
@@ -55,7 +54,7 @@ export function DashboardHeader({
       workspaces.length > 0 &&
       !currentWorkspaceId
     ) {
-      const firstWorkspace = workspaces[0]; // Already sorted by position ascending
+      const firstWorkspace = workspaces[0];
       const params = new URLSearchParams(searchParams.toString());
       params.set("workspace", firstWorkspace.id);
       router.replace(`/dashboard?${params.toString()}`);
@@ -75,7 +74,6 @@ export function DashboardHeader({
     { id: "board" as ViewMode, label: "Board", icon: LayoutGrid },
   ];
 
-  // Show loading state while auto-selecting workspace
   if (
     isLoadingWorkspaces ||
     (!currentWorkspaceId && workspaces && workspaces.length > 0)
@@ -129,7 +127,6 @@ export function DashboardHeader({
     );
   }
 
-  // Show empty state if no workspaces exist
   if (!isLoadingWorkspaces && (!workspaces || workspaces.length === 0)) {
     return (
       <div className="space-y-4 lg:space-y-6">
@@ -151,7 +148,6 @@ export function DashboardHeader({
 
   return (
     <div className="space-y-4 lg:space-y-6">
-      {/* Top Row: Title and Description */}
       <div
         className={cn(
           "flex flex-col sm:flex-row sm:justify-between sm:items-start border-l-4 pl-4 sm:pl-6 py-2 gap-3 sm:gap-0",
@@ -171,11 +167,8 @@ export function DashboardHeader({
           )}
         </div>
       </div>
-
-      {/* Bottom Row: Navigation, Filters, and Actions */}
       <div className="border-b pb-4">
         <div className="flex flex-col gap-4 sm:flex-row lg:justify-between lg:items-center">
-          {/* Left: Navigation Tabs */}
           <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto">
             {navigationItems.map((item) => {
               const Icon = item.icon;
@@ -200,15 +193,10 @@ export function DashboardHeader({
               );
             })}
           </div>
-
-          {/* Right: Search, Filter, and Add Actions */}
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-            {/* Task Filters - Full width on mobile */}
             <div className="w-full sm:w-auto">
               <TaskFilters />
             </div>
-
-            {/* Add Actions Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -242,8 +230,6 @@ export function DashboardHeader({
           </div>
         </div>
       </div>
-
-      {/* Task Dialog */}
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -260,8 +246,6 @@ export function DashboardHeader({
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Column Dialog */}
       <Dialog open={isColumnDialogOpen} onOpenChange={setIsColumnDialogOpen}>
         <DialogContent className="w-[95vw] max-w-lg">
           <DialogHeader>

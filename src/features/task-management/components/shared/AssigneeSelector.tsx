@@ -10,7 +10,6 @@ import {
   PopoverContent,
   PopoverTrigger,
   Checkbox,
-  Skeleton,
   Button,
 } from "@/shared";
 import { cn } from "@/shared";
@@ -54,16 +53,14 @@ export function AssigneeSelector({
     Assignee | undefined
   >(undefined);
 
-  const { data: allAssigneesData, isLoading: isLoadingAll } = useAssignees();
+  const { data: allAssigneesData } = useAssignees();
   const taskAssignees = assignees || [];
 
-  // Action hooks
   const { mutate: addAssignee, isPending: isAdding } = useAddAssigneeToTask();
   const { mutate: removeAssignee, isPending: isRemoving } =
     useRemoveAssigneeFromTask();
   const { mutate: deleteAssignee } = useDeleteAssignee();
 
-  // Filter available assignees based on search
   const allAssignees = allAssigneesData || [];
   const filteredAssignees = allAssignees.filter((assignee) =>
     assignee.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -116,12 +113,11 @@ export function AssigneeSelector({
               variant === "compact" && "scale-90"
             )}
           >
-            {/* Current Assignees */}
             {visibleAssignees.map((assignee) => (
               <Avatar
                 key={assignee.id}
                 className={cn(
-                  "h-8 w-8 border-2 border-background transition-transform hover:scale-110",
+                  "h-8 w-8 hover:scale-110",
                   variant === "compact" && "h-6 w-6"
                 )}
               >
@@ -139,7 +135,6 @@ export function AssigneeSelector({
               </Avatar>
             ))}
 
-            {/* Remaining Count */}
             {remainingCount > 0 && (
               <Avatar
                 className={cn(
@@ -176,13 +171,10 @@ export function AssigneeSelector({
 
         <PopoverContent className="w-80 p-0" align="start">
           <div className="p-4 space-y-4">
-            {/* Header */}
             <div className="space-y-2">
               <h4 className="font-medium text-sm">
                 Beheer Toegewezen Personen
               </h4>
-
-              {/* Search Input */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -193,19 +185,8 @@ export function AssigneeSelector({
                 />
               </div>
             </div>
-
-            {/* Assignees List */}
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {isLoadingAll ? (
-                // Loading skeletons
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center space-x-3 p-2">
-                    <Skeleton className="h-4 w-4" />
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-4 flex-1" />
-                  </div>
-                ))
-              ) : filteredAssignees.length === 0 ? (
+              {filteredAssignees.length === 0 ? (
                 <div className="text-center py-4 text-sm text-muted-foreground">
                   {searchQuery
                     ? "Geen personen gevonden"
@@ -225,14 +206,11 @@ export function AssigneeSelector({
                       )}
                       onClick={() => handleAssigneeToggle(assignee)}
                     >
-                      {/* Checkbox */}
                       <Checkbox
                         checked={assigned}
                         disabled={isAdding || isRemoving}
                         className="pointer-events-none"
                       />
-
-                      {/* Avatar */}
                       <Avatar className="h-8 w-8">
                         <AvatarImage
                           src={assignee.avatarUrl || undefined}
@@ -246,13 +224,9 @@ export function AssigneeSelector({
                             .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-
-                      {/* Name */}
                       <span className="flex-1 text-sm font-medium">
                         {assignee.name}
                       </span>
-
-                      {/* Status indicator */}
                       {assigned && <Check className="h-4 w-4 text-green-600" />}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -291,8 +265,6 @@ export function AssigneeSelector({
               <Plus className="w-4 h-4 mr-2" />
               Nieuwe assignee aanmaken
             </Button>
-
-            {/* Footer */}
             {taskAssignees.length > 0 && (
               <div className="pt-2 border-t text-xs text-muted-foreground">
                 {taskAssignees.length}{" "}

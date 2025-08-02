@@ -40,7 +40,7 @@ export function DueDatePicker({
           <span
             className={cn(
               "text-sm transition-all duration-200 group-hover:scale-[1.02]",
-              getDateColorClass(currentDate) // 👈 Use utility function
+              getDateColorClass(currentDate)
             )}
           >
             {currentDate ? formatTaskDueDate(currentDate) : "Geen datum"}

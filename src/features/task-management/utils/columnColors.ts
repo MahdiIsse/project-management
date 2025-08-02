@@ -88,16 +88,10 @@ const DEFAULT_COLUMN_STYLE = {
   pickerBg: 'bg-gray-500',
 } as const;
 
-/**
- * Zoekt column kleuren op basis van de color name
- */
 export function getColumnColorByName(name: string): ColumnColor | undefined {
   return COLUMN_COLORS.find(color => color.name === name);
 }
 
-/**
- * Zoekt column kleuren op basis van de border class
- */
 export function getColumnColorByBorder(border: string | undefined | null): ColumnColor {
   if (!border) {
     return {
@@ -113,17 +107,11 @@ export function getColumnColorByBorder(border: string | undefined | null): Colum
   };
 }
 
-/**
- * Geeft alleen de text styling voor een column (voor use in Select componenten)
- */
 export function getColumnTextStyle(border: string | undefined | null): string {
   const color = getColumnColorByBorder(border);
   return color.columnText;
 }
 
-/**
- * Geeft alleen de border styling voor een column
- */
 export function getColumnBorderStyle(border: string | undefined | null): string {
   const color = getColumnColorByBorder(border);
   return color.border;

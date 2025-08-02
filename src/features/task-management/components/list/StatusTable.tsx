@@ -76,7 +76,6 @@ export function StatusTable({
     transition,
   };
 
-  // 🚀 NIEUW: Kleuren ophalen met de helper
   const { columnBg, columnText } = getColumnColorByBorder(column.border);
 
   const handleTaskNameClick = (task: Task) => setTaskToEdit(task);
@@ -112,7 +111,6 @@ export function StatusTable({
 
   return (
     <>
-      {/* 1. De "Frame" container */}
       <div
         ref={setNodeRef}
         style={style}
@@ -133,7 +131,6 @@ export function StatusTable({
               <col className="w-32" />
             </colgroup>
             <TableHeader>
-              {/* 2. De Gekleurde, Klikbare Header */}
               <CollapsibleTrigger asChild>
                 <TableRow className={cn("hover:bg-opacity-90", columnBg)}>
                   <TableHead colSpan={7} className="p-0 cursor-pointer">
@@ -145,7 +142,6 @@ export function StatusTable({
                           className="cursor-grab active:cursor-grabbing p-2"
                           {...attributes}
                           {...listeners}
-                          onClick={(e) => e.stopPropagation()}
                         >
                           <GripVertical className="h-4 w-4" />
                         </span>
@@ -167,15 +163,13 @@ export function StatusTable({
                               size="sm"
                               variant="ghost"
                               className="h-8 w-8 p-0"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               <Ellipsis className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
+                              onClick={() => {
                                 setIsColumnFormOpen(true);
                               }}
                             >
@@ -184,8 +178,7 @@ export function StatusTable({
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
+                              onClick={() => {
                                 setIsDeleteConfirmOpen(true);
                               }}
                               className="text-destructive focus:text-destructive"
@@ -200,7 +193,6 @@ export function StatusTable({
                   </TableHead>
                 </TableRow>
               </CollapsibleTrigger>
-              {/* 3. De Kolomtitels */}
               <TableRow className="border-b bg-muted/30 text-xs uppercase hover:bg-muted/40">
                 <TableHead>
                   <Checkbox
@@ -216,7 +208,6 @@ export function StatusTable({
                 <TableHead>Tags</TableHead>
               </TableRow>
             </TableHeader>
-            {/* 4. De Inklapbare Content */}
             <CollapsibleContent asChild>
               <TableBody>
                 {tasks.map((task) => (
@@ -233,8 +224,6 @@ export function StatusTable({
           </Table>
         </Collapsible>
       </div>
-
-      {/* Dialogs blijven hier, buiten de tabel */}
       <Dialog open={isColumnFormOpen} onOpenChange={setIsColumnFormOpen}>
         <DialogContent>
           <DialogHeader>

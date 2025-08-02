@@ -2,8 +2,6 @@
 
 import {createServerClient} from "@/shared/lib/supabase/server"
 
-
-
 export async function addAssigneeToTask(taskId: string, assigneeId: string) {
   const supabase = await createServerClient()
 

@@ -66,7 +66,6 @@ export async function signup(data: SignUpSchemaValues) {
       await setupDummyDataForNewUser(authData.user.id);
     } catch (error) {
       console.error("Dummy data setup failed:", error);
-      // Continue with signup - dummy data is niet kritiek
     }
   }
 

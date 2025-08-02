@@ -1,46 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, Suspense } from "react";
 import {
   DashboardHeader,
   TaskBoard,
   TaskListView,
 } from "@/features/task-management";
 import type { ViewMode } from "@/features/task-management";
-import { TestingButtons } from "./layout/DeleteUser";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
+import { TestingButtons } from "./layout/DeleteUserDataTesting";
+import { useDashboardContainer } from "../hooks/useDashboardContainer";
 
 export function DashboardContainer() {
   const [currentView, setCurrentView] = useState<ViewMode>("list");
-  const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const isNewUser = searchParams?.get("newUser") === "true";
-    if (isNewUser) {
-      queryClient.invalidateQueries();
-    }
-  }, [queryClient, searchParams]);
+  useDashboardContainer();
 
   const renderView = () => {
     switch (currentView) {
       case "list":
-        return <TaskListView />;
+        return (
+          <Suspense fallback={<div>Loading tasks...</div>}>
+            <TaskListView />
+          </Suspense>
+        );
       case "board":
-        return <TaskBoard />;
+        return (
+          <Suspense fallback={<div>Loading board...</div>}>
+            <TaskBoard />
+          </Suspense>
+        );
       default:
-        return <TaskListView />;
+        return (
+          <Suspense fallback={<div>Loading tasks...</div>}>
+            <TaskListView />
+          </Suspense>
+        );
     }
   };
 
   return (
     <div className="h-full flex flex-col p-6 space-y-6">
       {/* <TestingButtons /> */}
-      <DashboardHeader
-        currentView={currentView}
-        onViewChange={setCurrentView}
-      />
+      <Suspense fallback={<div>Loading dashboard...</div>}>
+        <DashboardHeader
+          currentView={currentView}
+          onViewChange={setCurrentView}
+        />
+      </Suspense>
       <div className="flex-1">{renderView()}</div>
     </div>
   );

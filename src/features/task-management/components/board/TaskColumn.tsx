@@ -57,7 +57,6 @@ export function TaskColumn({
 
   const { mutate: deleteColumn, isPending: isDeleting } = useDeleteColumn();
 
-  // Column sorting
   const {
     attributes,
     listeners,
@@ -73,7 +72,6 @@ export function TaskColumn({
     },
   });
 
-  // Task dropping (existing)
   const { setNodeRef: setDroppableRef, isOver: isColumnOver } = useDroppable({
     id: column.id,
     data: {
@@ -82,7 +80,6 @@ export function TaskColumn({
     },
   });
 
-  // Combine refs
   const setNodeRef = (node: HTMLElement | null) => {
     setSortableRef(node);
     setDroppableRef(node);
@@ -207,7 +204,6 @@ export function TaskColumn({
         </div>
       </SortableContext>
 
-      {/* Dialogs blijven hetzelfde... */}
       <Dialog open={isColumnFormOpen} onOpenChange={closeColumnForm}>
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
           <ColumnForm

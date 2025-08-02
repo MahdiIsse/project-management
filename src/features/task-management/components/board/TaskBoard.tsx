@@ -41,7 +41,6 @@ export function TaskBoard() {
   } = useColumns(workspaceId);
   const { data: tasks = [] } = useTasks(workspaceId, filters);
 
-  // Task drag and drop
   const {
     handleDragEnd: handleTaskDragEnd,
     handleDragStart: handleTaskDragStart,
@@ -50,7 +49,6 @@ export function TaskBoard() {
     activeTask,
   } = useTaskDragAndDrop({ tasks, workspaceId });
 
-  // Column drag and drop
   const {
     handleDragStart: handleColumnDragStart,
     handleDragEnd: handleColumnDragEnd,
@@ -58,7 +56,6 @@ export function TaskBoard() {
     activeItem: activeColumn,
   } = useColumnDragAndDrop({ columns: columns || [], workspaceId });
 
-  // Sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -67,10 +64,8 @@ export function TaskBoard() {
     })
   );
 
-  // Combined handlers
   const combinedDragStart = (event: DragStartEvent) => {
     const dragType = event.active.data.current?.type;
-
     if (dragType === "Task") {
       handleTaskDragStart(event);
     } else if (dragType === "Column") {
@@ -80,7 +75,6 @@ export function TaskBoard() {
 
   const combinedDragEnd = (event: DragEndEvent) => {
     const dragType = event.active.data.current?.type;
-
     if (dragType === "Task") {
       handleTaskDragEnd();
     } else if (dragType === "Column") {
@@ -90,11 +84,9 @@ export function TaskBoard() {
 
   const combinedDragOver = (event: DragOverEvent) => {
     const dragType = event.active.data.current?.type;
-
     if (dragType === "Task") {
       handleTaskDragOver(event);
     }
-    // Column dragging doesn't need dragOver
   };
 
   const tasksByColumn = useMemo(() => {

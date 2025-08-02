@@ -114,15 +114,13 @@ export function AssigneeForm({
     }
   };
 
-  // Determine which avatar to show
   const currentAvatarUrl = assigneeToEdit?.avatarUrl;
   const showAvatar = previewUrl || currentAvatarUrl;
   const avatarDisplayName = form.watch("name") || assigneeToEdit?.name || "";
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Avatar Preview Section */}
+      <div className="space-y-6">
         {showAvatar && (
           <div className="flex flex-col items-center justify-center gap-3">
             <FormLabel>
@@ -179,7 +177,6 @@ export function AssigneeForm({
               <FormLabel>Avatar</FormLabel>
               <FormControl>
                 <div className="space-y-3">
-                  {/* Custom File Input */}
                   <div className="flex items-center gap-4">
                     <Button
                       type="button"
@@ -202,13 +199,16 @@ export function AssigneeForm({
                     </span>
                   </div>
 
-                  {/* Hidden File Input */}
                   <input
                     id="avatar-upload"
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => handleFileChange(e.target.files?.[0])}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      handleFileChange(file);
+                      field.onChange(file);
+                    }}
                   />
 
                   <p className="text-xs text-muted-foreground">
@@ -222,7 +222,12 @@ export function AssigneeForm({
         />
 
         <div className="flex gap-3 pt-4">
-          <Button type="submit" className="flex-1" disabled={isPending}>
+          <Button
+            type="button"
+            className="flex-1"
+            disabled={isPending}
+            onClick={form.handleSubmit(onSubmit)}
+          >
             {isPending
               ? isEditMode
                 ? "Opslaan..."
@@ -235,7 +240,7 @@ export function AssigneeForm({
             Annuleren
           </Button>
         </div>
-      </form>
+      </div>
     </Form>
   );
 }

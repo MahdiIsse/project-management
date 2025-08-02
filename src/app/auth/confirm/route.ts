@@ -20,6 +20,4 @@ export async function GET(request: NextRequest) {
       redirect(next)
     }
   }
-
-  redirect("/error")
 }

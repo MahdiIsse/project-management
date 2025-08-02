@@ -35,8 +35,6 @@ export function TaskTableRow({
           onCheckedChange={(checked) => onSelect(task.id, checked as boolean)}
         />
       </TableCell>
-
-      {/* Task Title */}
       <TableCell>
         <Button
           variant="ghost"
@@ -46,13 +44,9 @@ export function TaskTableRow({
           <span className="truncate block">{task.title}</span>
         </Button>
       </TableCell>
-
-      {/* Created Date */}
       <TableCell className="text-sm">
         {new Date(task.createdAt || Date.now()).toLocaleDateString()}
       </TableCell>
-
-      {/* Due Date - Inline Editor */}
       <TableCell>
         <DueDatePicker
           currentDate={task.dueDate}
@@ -65,8 +59,6 @@ export function TaskTableRow({
           variant="compact"
         />
       </TableCell>
-
-      {/* Priority - Inline Editor */}
       <TableCell>
         <PrioritySelector
           currentPriority={task.priority}
@@ -79,8 +71,6 @@ export function TaskTableRow({
           variant="default"
         />
       </TableCell>
-
-      {/* Assignees - Inline Editor */}
       <TableCell>
         <AssigneeSelector
           taskId={task.id}
@@ -89,8 +79,6 @@ export function TaskTableRow({
           assignees={task.assignees}
         />
       </TableCell>
-
-      {/* Tags - Inline Editor */}
       <TableCell>
         <TagSelector
           taskId={task.id}

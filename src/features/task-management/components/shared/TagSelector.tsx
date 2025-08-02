@@ -9,7 +9,6 @@ import {
   PopoverContent,
   PopoverTrigger,
   Checkbox,
-  Skeleton,
   Dialog,
   DialogContent,
   DialogHeader,
@@ -35,7 +34,7 @@ import {
   useAddTagToTask,
   useRemoveTagFromTask,
 } from "@/features/task-management/hooks";
-import { TagCreateForm } from "@/features/task-management/components/form";
+import { TagForm } from "@/features/task-management/components/form";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { getTagColorByName } from "@/features/task-management/utils";
 
@@ -63,22 +62,17 @@ export function TagSelector({
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag | undefined>(undefined);
 
-  // Data hooks
-  const { data: allTags, isLoading: isLoadingAll } = useTags();
-
-  // Action hooks
-  const { mutate: addTag, isPending: isAdding } = useAddTagToTask();
-  const { mutate: removeTag, isPending: isRemoving } = useRemoveTagFromTask();
+  const { data: allTags } = useTags();
+  const { mutate: addTag } = useAddTagToTask();
+  const { mutate: removeTag } = useRemoveTagFromTask();
   const { mutate: deleteTag } = useDeleteTag();
 
-  // Safe data access
   const safeAllTags = allTags || [];
   const safeTaskTags = tags || [];
 
   const visibleTags = safeTaskTags.slice(0, maxVisible);
   const remainingCount = safeTaskTags.length - maxVisible;
 
-  // Filter available tags based on search
   const filteredTags = safeAllTags.filter((tag) =>
     tag.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -97,7 +91,7 @@ export function TagSelector({
   const handleCreateClick = () => {
     setSelectedTag(undefined);
     setIsCreateDialogOpen(true);
-    setIsPopoverOpen(false); // Close popover for cleaner UX
+    setIsPopoverOpen(false);
   };
 
   const handleEditClick = (tag: Tag) => {
@@ -205,15 +199,7 @@ export function TagSelector({
             </div>
 
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {isLoadingAll ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center space-x-3 p-2">
-                    <Skeleton className="h-4 w-4" />
-                    <Skeleton className="h-5 w-16 rounded" />
-                    <Skeleton className="h-4 flex-1" />
-                  </div>
-                ))
-              ) : filteredTags.length === 0 ? (
+              {filteredTags.length === 0 ? (
                 <div className="text-center py-4 text-sm text-muted-foreground">
                   Geen tags gevonden
                 </div>
@@ -232,10 +218,7 @@ export function TagSelector({
                     >
                       <Checkbox
                         checked={assigned}
-                        disabled={isAdding || isRemoving}
-                        className="pointer-events-none"
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onClick={() => {
                           handleTagToggle(tag);
                         }}
                       />
@@ -255,14 +238,9 @@ export function TagSelector({
                       >
                         {tag.name}
                       </span>
-
-                      {/* Action Menu */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent/50 rounded ml-auto shrink-0"
-                            onClick={(e) => e.stopPropagation()}
-                          >
+                          <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent/50 rounded ml-auto shrink-0">
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
                         </DropdownMenuTrigger>
@@ -301,7 +279,6 @@ export function TagSelector({
         </PopoverContent>
       </Popover>
 
-      {/* Create Tag Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -311,7 +288,7 @@ export function TagSelector({
               automatisch aan de huidige taak toegewezen.
             </DialogDescription>
           </DialogHeader>
-          <TagCreateForm
+          <TagForm
             initialName={searchQuery}
             onSuccess={(newTag) => {
               addTag(
@@ -328,7 +305,6 @@ export function TagSelector({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Tag Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -338,7 +314,7 @@ export function TagSelector({
             </DialogDescription>
           </DialogHeader>
           {selectedTag && (
-            <TagCreateForm
+            <TagForm
               initialName={selectedTag.name}
               tagToEdit={selectedTag}
               onSuccess={() => {
@@ -350,7 +326,6 @@ export function TagSelector({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog
         isOpen={isDeleteConfirmOpen}
         onClose={() => setIsDeleteConfirmOpen(false)}

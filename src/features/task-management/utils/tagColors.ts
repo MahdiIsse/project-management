@@ -67,16 +67,12 @@ export type TagColor = {
   name: string;
   colorBg: string;
   colorText: string;
-  pickerBg: string; // 👈 Nieuw
+  pickerBg: string;
 };
 
-/**
- * Zoekt tag kleuren op basis van de color name
- */
 export function getTagColorByName(name: string): TagColor | undefined {
   const color = TAG_COLORS.find(color => color.name === name);
   if (!color) return undefined;
-  
   return {
     name: color.name,
     colorBg: color.colorBg,
@@ -85,9 +81,6 @@ export function getTagColorByName(name: string): TagColor | undefined {
   };
 }
 
-/**
- * Zoekt tag kleuren op basis van display name (alias voor getTagColorByName)
- */
 export function getTagColorByDisplayName(displayName: string): TagColor | undefined {
   return getTagColorByName(displayName);
 } 

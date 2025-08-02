@@ -30,17 +30,17 @@ import {
 } from "@/features/task-management/schemas/tags";
 import type { Tag } from "@/features/task-management";
 
-interface TagCreateFormProps {
+interface TagFormProps {
   onSuccess?: (newTag: Tag) => void;
   initialName?: string;
   tagToEdit?: Tag;
 }
 
-export function TagCreateForm({
+export function TagForm({
   onSuccess,
   initialName = "",
   tagToEdit,
-}: TagCreateFormProps) {
+}: TagFormProps) {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const { mutate: createTag, isPending: isCreating } = useCreateTag();
   const { mutate: updateTag, isPending: isUpdating } = useUpdateTag();
@@ -77,22 +77,23 @@ export function TagCreateForm({
           },
         }
       );
+    } else {
+      createTag(data, {
+        onSuccess: (newTag) => {
+          form.reset({
+            name: "",
+            colorName: TAG_COLORS[0].name,
+          });
+          onSuccess?.(newTag);
+        },
+      });
     }
-    createTag(data, {
-      onSuccess: (newTag) => {
-        form.reset({
-          name: "",
-          colorName: TAG_COLORS[0].name,
-        });
-        onSuccess?.(newTag);
-      },
-    });
   };
 
   return (
     <div className="pt-4">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-6">
           <FormField
             control={form.control}
             name="name"
@@ -132,7 +133,7 @@ export function TagCreateForm({
                             <div
                               className={cn(
                                 "w-4 h-4 rounded-full border",
-                                selectedColor?.pickerBg // 👈 Gebruik heldere kleur in plaats van colorBg
+                                selectedColor?.pickerBg
                               )}
                             />
                             <span className="font-normal">
@@ -200,11 +201,16 @@ export function TagCreateForm({
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button
+            type="button"
+            className="w-full"
+            disabled={isPending}
+            onClick={form.handleSubmit(onSubmit)}
+          >
             <Plus className="h-4 w-4 mr-2" />
             {isPending ? "Tag aanmaken..." : "Tag aanmaken"}
           </Button>
-        </form>
+        </div>
       </Form>
     </div>
   );

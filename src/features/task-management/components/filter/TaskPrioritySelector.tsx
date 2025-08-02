@@ -27,8 +27,8 @@ export function FilterPrioritySelector({
 
   const handleToggle = (priority: string) => {
     const newValue = value.includes(priority)
-      ? value.filter((p) => p !== priority) // Remove
-      : [...value, priority]; // Add
+      ? value.filter((p) => p !== priority)
+      : [...value, priority];
 
     onChange(newValue);
   };
@@ -76,7 +76,6 @@ export function FilterPrioritySelector({
             </div>
           ))}
 
-          {/* Clear button */}
           {value.length > 0 && (
             <Button
               variant="outline"
