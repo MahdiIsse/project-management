@@ -34,7 +34,7 @@ import {
 import { Task, Priority, priorityOptions } from "@/features/task-management";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/shared";
-import { format } from "date-fns";
+import { format, parseISO, formatISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import { getColumnTextStyle } from "../../utils";
 import { useState } from "react";
@@ -67,9 +67,7 @@ export function TaskForm({
             description: taskToEdit.description || "",
             columnId: taskToEdit.columnId,
             priority: taskToEdit.priority as Priority,
-            dueDate: taskToEdit.dueDate
-              ? new Date(taskToEdit.dueDate)
-              : undefined,
+            dueDate: taskToEdit.dueDate || undefined,
             assigneeIds: taskToEdit.assignees.map((a) => a.id),
             tagIds: taskToEdit.tags.map((t) => t.id),
           }
@@ -235,7 +233,7 @@ export function TaskForm({
                       disabled={isPending}
                     >
                       {field.value ? (
-                        format(field.value, "PPP", { locale: nl })
+                        format(parseISO(field.value), "PPP", { locale: nl })
                       ) : (
                         <span>Selecteer datum</span>
                       )}
@@ -246,9 +244,13 @@ export function TaskForm({
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value}
+                    selected={field.value ? parseISO(field.value) : undefined}
                     onSelect={(date) => {
-                      field.onChange(date);
+                      field.onChange(
+                        date
+                          ? formatISO(date, { representation: "date" })
+                          : undefined
+                      );
                       setIsPopoverOpen(false);
                     }}
                     disabled={isPending}

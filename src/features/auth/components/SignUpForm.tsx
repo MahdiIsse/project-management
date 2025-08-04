@@ -13,18 +13,20 @@ import {
   FormField,
   FormLabel,
   FormControl,
-  FormMessage,
   FormItem,
 } from "@/shared/components/ui/form";
-import { signup } from "../actions";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared";
+import { useSignup } from "../hooks/useAuth";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  const { mutate: signup, isPending, isError, error } = useSignup();
+
   const form = useForm<SignUpSchemaValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -101,7 +103,6 @@ export function SignUpForm({
                     onBlur={field.onBlur}
                   />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -119,7 +120,6 @@ export function SignUpForm({
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -137,7 +137,6 @@ export function SignUpForm({
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -154,7 +153,6 @@ export function SignUpForm({
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -171,12 +169,12 @@ export function SignUpForm({
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
-            Account aanmaken
+          {isError && <div className="text-red-700">{error.message}</div>}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Account aanmaken..." : "Account aanmaken"}
           </Button>
         </div>
         <div className="text-center text-sm">

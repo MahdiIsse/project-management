@@ -14,13 +14,15 @@ import {
   FormMessage,
   FormItem,
 } from "@/shared/components/ui/form";
-import { login } from "@/features/auth/actions/auth";
 import Link from "next/link";
+import { useLogin } from "../hooks/useAuth";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const { mutate: login, isPending, isError, error } = useLogin();
+
   const form = useForm<LoginSchemaValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -84,8 +86,9 @@ export function LoginForm({
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
-            Inloggen
+          {isError && <div className="text-red-700">{error.message}</div>}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Inloggen..." : "Inloggen"}
           </Button>
         </div>
         <div className="text-center text-sm ">

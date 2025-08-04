@@ -4,13 +4,14 @@ import { CalendarDays } from "lucide-react";
 
 import { cn } from "@/shared";
 import { formatTaskDueDate, getDateColorClass } from "@/shared";
+import { formatISO, parseISO } from "date-fns";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared";
 import { Calendar } from "@/shared";
 
 interface DueDatePickerProps {
   currentDate?: string | null;
-  onDateChange: (date: Date) => void;
+  onDateChange: (date?: string) => void;
   variant?: "default" | "compact";
 }
 
@@ -50,12 +51,12 @@ export function DueDatePicker({
       <PopoverContent className="w-auto p-0">
         <Calendar
           mode="single"
-          selected={currentDate ? new Date(currentDate) : undefined}
+          selected={currentDate ? parseISO(currentDate) : undefined}
           onSelect={(date) => {
-            if (date) {
-              onDateChange(date);
-              setIsOpen(false);
-            }
+            onDateChange(
+              date ? formatISO(date, { representation: "date" }) : undefined
+            );
+            setIsOpen(false);
           }}
         />
       </PopoverContent>

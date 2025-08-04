@@ -2,9 +2,10 @@
 
 import { Task } from "@/features/task-management/types"
 import { useUpdateTasksPositions } from "@/features/task-management/hooks/task"
-import { useState, useRef } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { DragOverEvent, DragStartEvent } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
+import { debounce } from "lodash"
 
 interface UseDragAndDropProps {
   tasks: Task[];
@@ -16,16 +17,21 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
   const [localTasks, setLocalTasks] = useState<Task[] | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
 
-  const lastCrossColumnRef = useRef<{ at: number; from: string; to: string } | null>(null)
-
   const displayTasks = localTasks || tasks
+
+  const debouncedColumnUpdate = useMemo(
+    () => debounce((newTasks: Task[]) => {
+      setLocalTasks(newTasks)
+    }, 50),
+    []
+  )
 
   const handleDragStart = (event: DragStartEvent) => {
     const draggingTask = displayTasks.find((task) => task.id === event.active.id);
     setActiveTask(draggingTask || null);
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
+  const handleDragOver = useCallback((event: DragOverEvent) => {
     const { active, over } = event
     if (!over) return
 
@@ -50,17 +56,10 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
       const newTasks = [...displayTasks];
 
       if (aTask.columnId !== oTask.columnId) {
-        const now = Date.now();
-        const last = lastCrossColumnRef.current;
-        if (last && now - last.at < 80 && last.from === oTask.columnId && last.to === aTask.columnId) {
-          return;
-        }
         newTasks[activeIndex] = { ...aTask, columnId: oTask.columnId };
-
         if (newTasks.filter(t => t.id === activeId).length !== 1) return;
-
-        lastCrossColumnRef.current = { at: now, from: aTask.columnId, to: oTask.columnId };
-        setLocalTasks(newTasks);
+        
+        debouncedColumnUpdate(newTasks);
         return;
       }
 
@@ -78,23 +77,15 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
       const targetColumnId = String(overId);
 
       if (aTask.columnId !== targetColumnId) {
-        const now = Date.now();
-        const last = lastCrossColumnRef.current;
-        if (last && now - last.at < 80 && last.from === targetColumnId && last.to === aTask.columnId) {
-          return;
-        }
-
         const newTasks = [...displayTasks];
         newTasks[activeIndex] = { ...aTask, columnId: targetColumnId };
-
         if (newTasks.filter(t => t.id === activeId).length !== 1) return;
 
-        lastCrossColumnRef.current = { at: now, from: aTask.columnId, to: targetColumnId };
-        setLocalTasks(newTasks);
+        debouncedColumnUpdate(newTasks);
       }
       return;
     }
-  }
+  }, [displayTasks, debouncedColumnUpdate])
 
   const handleDragEnd = () => {
     setActiveTask(null);

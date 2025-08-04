@@ -1,7 +1,6 @@
 "use server"
 
 import {revalidatePath} from "next/cache"
-import {redirect} from "next/navigation"
 import {createServerClient} from "@/shared/lib/supabase/server"
 import {LoginSchemaValues, SignUpSchemaValues} from "@/features/auth/schemas/auth"
 import { setupDummyDataForNewUser } from "./onboarding"
@@ -12,13 +11,12 @@ export async function login(data: LoginSchemaValues) {
   const {error} = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect("/error")
+    throw new Error(error.message)
   }
 
   revalidatePath("/", "layout")
-  redirect("/dashboard?newUser=true")
+  return { success: true }
 }
-
 
 export async function signup(data: SignUpSchemaValues) {
   const supabase = await createServerClient()
@@ -36,7 +34,7 @@ export async function signup(data: SignUpSchemaValues) {
     .upload(filePath, file)
 
   if (uploadError) {
-    throw new Error ("Afbeelding mislukt met uploaden")
+    throw new Error("Afbeelding mislukt met uploaden")
   }
 
   const {data: publicUrlData} = supabase.storage
@@ -58,7 +56,7 @@ export async function signup(data: SignUpSchemaValues) {
   })
 
   if (error) {
-    redirect("/error")
+    throw new Error(error.message)
   }
   
   if (authData.user) {
@@ -70,7 +68,7 @@ export async function signup(data: SignUpSchemaValues) {
   }
 
   revalidatePath("/", "layout")
-  redirect("/dashboard")
+  return { success: true }
 }
 
 export async function logout(){

@@ -7,7 +7,6 @@ import {
   TaskWithJoins, 
   mapTask, 
 } from "@/features/task-management"
-import { formatDateForDatabase } from "@/shared"
 import {createServerClient} from "@/shared/lib/supabase/server"
 
 export async function getTasks(workspaceId: string, filters?: TaskFilterParams): Promise<Task[]> {
@@ -71,7 +70,7 @@ export async function createTask(workspaceId: string, data: TaskSchemaValues) {
       column_id: data.columnId,
       description: data.description,
       priority: data.priority,
-      due_date: data.dueDate ? formatDateForDatabase(data.dueDate) : null,
+      due_date: data.dueDate,
       workspace_id: workspaceId,
       position: newPosition
     })
@@ -118,7 +117,7 @@ export async function updateTask(data: Partial<TaskSchemaValues>, taskId: string
       title: data.title,
       description: data.description,
       column_id: data.columnId,
-      due_date: data.dueDate ? formatDateForDatabase(data.dueDate) : undefined,
+      due_date: data.dueDate,
       priority: data.priority,
       position: data.position,
     })
