@@ -16,7 +16,7 @@ export default function SignUpPage() {
           src="/abstract.jpg"
           alt="Image"
           fill
-          className="object-cover dark:brightness-[0.2] dark:grayscale"
+          className="object-cover dark:brightness-[0.3] "
         />
       </div>
     </div>
