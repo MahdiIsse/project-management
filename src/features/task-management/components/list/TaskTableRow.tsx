@@ -8,7 +8,10 @@ import {
   AssigneeSelector,
   TagSelector,
 } from "@/features/task-management/components/shared";
+import { StatusSelector } from "./StatusSelector";
 import { useUpdateTask } from "@/features/task-management/hooks";
+import { useColumns } from "@/features/task-management/hooks";
+import { useSearchParams } from "next/navigation";
 
 interface TaskTableRowProps {
   task: Task;
@@ -24,6 +27,9 @@ export function TaskTableRow({
   onEdit,
 }: TaskTableRowProps) {
   const { mutate: updateTask } = useUpdateTask();
+  const searchParams = useSearchParams();
+  const workspaceId = searchParams.get("workspace") ?? "";
+  const { data: columns = [] } = useColumns(workspaceId);
 
   return (
     <TableRow
@@ -36,13 +42,27 @@ export function TaskTableRow({
         />
       </TableCell>
       <TableCell>
-        <Button
-          variant="ghost"
-          className="h-auto p-0 font-medium text-left hover:bg-muted/50 transition-colors"
-          onClick={() => onEdit(task)}
-        >
-          <span className="truncate block">{task.title}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center h-8">
+            <StatusSelector
+              currentColumnId={task.columnId}
+              columns={columns}
+              onStatusChange={(columnId) =>
+                updateTask({
+                  data: { columnId },
+                  taskId: task.id,
+                })
+              }
+            />
+          </div>
+          <Button
+            variant="ghost"
+            className="h-8 p-0 font-medium text-left hover:bg-muted/50 transition-colors flex-1 justify-start"
+            onClick={() => onEdit(task)}
+          >
+            <span className="truncate block">{task.title}</span>
+          </Button>
+        </div>
       </TableCell>
       <TableCell className="text-sm">
         {new Date(task.createdAt || Date.now()).toLocaleDateString()}
