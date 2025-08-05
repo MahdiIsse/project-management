@@ -1,132 +1,92 @@
-# 🚀 Project Management Platform
+# Project Management Platform
 
-> Een moderne, volledig functionele projectmanagement applicatie gebouwd met Next.js en TypeScript.
+Een modern en functioneel platform voor projectmanagement, gebouwd met Next.js en Supabase.
 
-**🌟 Live Demo:** [app.bymahdi.nl](https://app.bymahdi.nl)
+**🚀 Live Demo: [app.bymahdi.nl](https://app.bymahdi.nl)**
 
 ---
 
-## 📋 Overzicht
+## Over dit project
 
-Een geavanceerde task management platform met real-time functionaliteiten, gebouwd als portfolio project om moderne React development skills te demonstreren. De applicatie biedt een intuïtieve interface voor teamcollaboratie met drag-and-drop functionaliteit, filtering, en comprehensive task management.
+Dit project is een uitgebreid platform voor taakbeheer dat ik heb ontwikkeld als een showcase van mijn vaardigheden in moderne webdevelopment. Mijn doel was om een volledig functionele, real-time applicatie te bouwen die niet alleen technisch geavanceerd is, maar ook intuïtief en prettig in gebruik.
 
-## ✨ Features
+Ik heb me gericht op een schone architectuur, een optimale developer experience en een set features die echt nuttig zijn voor het beheren van projecten in teamverband.
 
-### 🎯 **Core Functionaliteiten**
+## Belangrijkste Features
 
-- **Multi-workspace ondersteuning** - Organiseer projecten in aparte workspaces
-- **Drag & Drop Interface** - Intuïtieve taak management met @dnd-kit
-- **Dual View Modes** - Switch tussen Kanban board en lijst weergave
-- **Advanced Filtering** - Filter op status, prioriteit, assignees en tags
+In plaats van een lange lijst, hier de kernfunctionaliteiten die het platform biedt:
 
-### 👥 **Team Management**
+- **Workspaces & Projecten:** Organiseer je werk in gescheiden workspaces, elk met eigen kolommen, taken en leden.
+- **Drag & Drop Board:** Een intuïtief Kanban board om taken eenvoudig te verplaatsen tussen statussen.
+- **Lijstweergave:** Wissel naar een compacte lijstweergave voor een ander overzicht van je taken.
+- **Slimme Filters:** Filter taken snel op basis van status, prioriteit, toegewezen persoon of tags.
+- **Team Collaboratie:** Wijs taken toe aan teamleden en personaliseer profielen met een eigen avatar.
+- **Custom Tags & Prioriteiten:** Creëer eigen tags met kleuren en stel prioriteiten in om werk te structureren.
 
-- **User Authentication** - Veilige login/registratie via Supabase
-- **Assignee Management** - Wijs taken toe aan team members
-- **Avatar Upload** - Personaliseer profielen met avatar afbeeldingen
-- **Role-based Access** - Workspace-gebaseerde toegangscontrole
 
-### 🏷️ **Task Organization**
+## Tech Stack & Keuzes
 
-- **Priority Levels** - Low, Medium, High prioriteiten
-- **Custom Tags** - Categoriseer taken met kleurgecodeerde tags
-- **Due Dates** - Deadline management met visual indicators
-- **Rich Descriptions** - Uitgebreide taak beschrijvingen
-- **Status Tracking** - Aanpasbare kolommen per workspace
+Voor dit project heb ik gekozen voor een moderne en schaalbare tech stack.
 
-### 🎨 **User Experience**
+- **Framework:** **Next.js 15 (App Router)** - Voor server-side rendering, routing en server actions.
+- **Taal:** **TypeScript** - Voor robuuste en type-veilige code.
+- **Styling:** **Tailwind CSS** & **shadcn/ui** - Voor een strak design en een efficiënte manier van stylen.
+- **State Management:** **TanStack Query (React Query)** - Voor het cachen en beheren van server state.
+- **Formulieren:** **React Hook Form** & **Zod** - Voor performante en valideerbare formulieren.
+- **Backend & Database:** **Supabase** - Dient als complete backend met een PostgreSQL database, authenticatie, file storage en real-time functionaliteit.
+- **Drag & Drop:** **@dnd-kit** - Voor een performante en toegankelijke drag-and-drop ervaring.
 
-- **Responsive Design** - Optimaal op alle devices
-- **Dark/Light Mode** - Automatische thema detectie
-- **Intuitive Forms** - Advanced form validation met Zod schemas
-- **Search & Filter** - Krachtige zoek functionaliteiten
-- **Inline Creation** - Creëer tags/assignees direct vanuit formulieren
+## Zelf draaien
 
-## 🛠️ Tech Stack
+Volg deze stappen om het project lokaal op te zetten.
 
-### **Frontend**
+**Vereisten:**
 
-- **Next.js 15** - React framework met App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **shadcn/ui** - Modern component library
-- **React Hook Form** - Performante formulieren
-- **Zod** - Schema validation
-- **@dnd-kit** - Drag and drop functionality
-- **TanStack Query** - State management & caching
+- Node.js v18+
+- Een package manager (npm, yarn, of pnpm)
+- Een gratis [Supabase account](https://supabase.com/)
 
-### **Backend & Database**
-
-- **Supabase** - PostgreSQL database, auth & real-time
-- **Server Actions** - Next.js server-side operations
-- **File Upload** - Avatar image handling
-- **Row Level Security** - Database-level authorization
-
-### **Development Tools**
-
-- **ESLint** - Code linting
-- **Prettier** - Code formatting
-- **TypeScript** - Static type checking
-- **Git** - Version control
-
-## 🚀 Installation & Setup
-
-### **Prerequisites**
-
-- Node.js 18+
-- npm/yarn/pnpm
-- Supabase account
-
-### **1. Clone Repository**
+**1. Clone de repository**
 
 ```bash
-git clone https://github.com/yourusername/project-management-v2.git
+git clone https://github.com/mahdiisse/project-management-v2.git
 cd project-management-v2
 ```
 
-### **2. Install Dependencies**
+**2. Installeer de dependencies**
 
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
-### **3. Environment Setup**
+**3. Zet je environment variabelen op**
 
-Creëer een `.env.local` bestand:
+Maak een `.env.local` bestand aan in de root van het project en voeg je Supabase credentials toe:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+NEXT_PUBLIC_SUPABASE_URL=jouw_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=jouw_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=jouw_service_role_key
 ```
 
-### **4. Database Setup**
+Deze keys vind je in de API settings van je Supabase project.
 
-1. Maak een nieuw Supabase project
-2. Run de SQL migrations (beschikbaar op aanvraag)
-3. Enable Row Level Security
-4. Setup storage bucket voor avatars
+**4. Database opzetten**
 
-### **5. Start Development Server**
+Voor het opzetten van de database heb je de SQL-schema's nodig. Neem contact met me op, dan stuur ik ze je toe. Ik werk eraan om deze binnenkort aan de repository toe te voegen voor een eenvoudigere setup.
+
+**5. Start de development server**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in je browser.
+Open [http://localhost:3000](http://localhost:3000) in je browser om de applicatie te zien.
 
-## 👨‍💻 Developer
+## 👨‍💻 Contact
 
 **Mahdi Isse**
 
-- Portfolio: [bymahdi.nl](https://bymahdi.nl)
-- LinkedIn: [linkedin.com/in/mahdi-isse](https://linkedin.com/in/mahdi-isse)
-- Email: mahdi.isse@outlook.com
+- **Portfolio:** [bymahdi.nl](https://bymahdi.nl)
+- **LinkedIn:** [linkedin.com/in/mahdi-isse](https://linkedin.com/in/mahdi-isse)
+- **E-mail:** mahdi.isse@outlook.com
