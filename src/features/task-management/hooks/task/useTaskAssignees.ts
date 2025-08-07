@@ -36,11 +36,21 @@ export function useAddAssigneeToTask() {
         queryClient.setQueryData<Task[]>(
           queryKey,
           (old) =>
-            old?.map((task) =>
-              task.id === taskId
-                ? { ...task, assignees: [...task.assignees, assigneeToAdd] }
-                : task
-            ) || []
+            old?.map((task) => {
+              if (task.id === taskId) {
+                const assigneeExists = task.assignees.some(
+                  (a) => a.id === assigneeId
+                );
+                if (assigneeExists) {
+                  return task;
+                }
+                return {
+                  ...task,
+                  assignees: [...task.assignees, assigneeToAdd],
+                };
+              }
+              return task;
+            }) || []
         );
       }
       return { previousTasks };
@@ -50,10 +60,6 @@ export function useAddAssigneeToTask() {
       if (context?.previousTasks) {
         queryClient.setQueryData(queryKey, context.previousTasks);
       }
-    },
-    onSettled: () => {
-      const queryKey = ["tasks", workspaceId];
-      queryClient.invalidateQueries({ queryKey });
     },
   });
 }
@@ -83,16 +89,17 @@ export function useRemoveAssigneeFromTask() {
         queryClient.setQueryData<Task[]>(
           queryKey,
           (old) =>
-            old?.map((task) =>
-              task.id === taskId
-                ? {
-                    ...task,
-                    assignees: task.assignees.filter(
-                      (a) => a.id !== assigneeId
-                    ),
-                  }
-                : task
-            ) || []
+            old?.map((task) => {
+              if (task.id === taskId) {
+                return {
+                  ...task,
+                  assignees: task.assignees.filter(
+                    (a) => a.id !== assigneeId
+                  ),
+                };
+              }
+              return task;
+            }) || []
         );
       }
       return { previousTasks };
@@ -102,10 +109,6 @@ export function useRemoveAssigneeFromTask() {
       if (context?.previousTasks) {
         queryClient.setQueryData(queryKey, context.previousTasks);
       }
-    },
-    onSettled: () => {
-      const queryKey = ["tasks", workspaceId];
-      queryClient.invalidateQueries({ queryKey });
     },
   });
 }

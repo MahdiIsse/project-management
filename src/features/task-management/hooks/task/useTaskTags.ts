@@ -5,8 +5,8 @@ import {
   addTagToTask,
   removeTagFromTask,
 } from "@/features/task-management/actions";
-import { Tag, Task } from "../../types";
 import { useSearchParams } from "next/navigation";
+import { Task, Tag } from "../../types";
 
 export function useAddTagToTask() {
   const queryClient = useQueryClient();
@@ -29,11 +29,16 @@ export function useAddTagToTask() {
         queryClient.setQueryData<Task[]>(
           queryKey,
           (old) =>
-            old?.map((task) =>
-              task.id === taskId
-                ? { ...task, tags: [...task.tags, tagToAdd] }
-                : task
-            ) || []
+            old?.map((task) => {
+              if (task.id === taskId) {
+                const tagExists = task.tags.some((t) => t.id === tagId);
+                if (tagExists) {
+                  return task;
+                }
+                return { ...task, tags: [...task.tags, tagToAdd] };
+              }
+              return task;
+            }) || []
         );
       }
       return { previousTasks };
@@ -44,11 +49,6 @@ export function useAddTagToTask() {
       if (context?.previousTasks) {
         queryClient.setQueryData(queryKey, context.previousTasks);
       }
-    },
-
-    onSettled: () => {
-      const queryKey = ["tasks", workspaceId];
-      queryClient.invalidateQueries({ queryKey });
     },
   });
 }
@@ -72,11 +72,15 @@ export function useRemoveTagFromTask() {
         queryClient.setQueryData<Task[]>(
           queryKey,
           (old) =>
-            old?.map((task) =>
-              task.id === taskId
-                ? { ...task, tags: task.tags.filter((t) => t.id !== tagId) }
-                : task
-            ) || []
+            old?.map((task) => {
+              if (task.id === taskId) {
+                return {
+                  ...task,
+                  tags: task.tags.filter((t) => t.id !== tagId),
+                };
+              }
+              return task;
+            }) || []
         );
       }
       return { previousTasks };
@@ -87,11 +91,6 @@ export function useRemoveTagFromTask() {
       if (context?.previousTasks) {
         queryClient.setQueryData(queryKey, context.previousTasks);
       }
-    },
-
-    onSettled: () => {
-      const queryKey = ["tasks", workspaceId];
-      queryClient.invalidateQueries({ queryKey });
     },
   });
 }

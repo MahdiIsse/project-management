@@ -212,7 +212,7 @@ export function TagSelector({
                     <div
                       key={tag.id}
                       className={cn(
-                        "group flex items-center space-x-3 p-2 rounded-md cursor-pointer transition-colors",
+                        "group flex items-center space-x-3 p-2 rounded-md cursor-pointer transition-colors select-none",
                         "hover:bg-muted/50",
                         assigned && "bg-muted"
                       )}
