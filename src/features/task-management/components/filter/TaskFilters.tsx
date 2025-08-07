@@ -23,11 +23,7 @@ export function TaskFilters() {
   const handleSearchChange = (value: string) => {
     setSearchValue(value);
 
-    const timeoutId = setTimeout(() => {
-      updateFilters({ search: value || undefined });
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
+    updateFilters({ search: value || undefined });
   };
 
   return (

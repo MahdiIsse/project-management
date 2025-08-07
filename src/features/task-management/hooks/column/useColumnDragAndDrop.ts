@@ -1,5 +1,5 @@
 import { useDragAndDrop } from "@/shared";
-import { useUpdateColumnsPositions } from "@/features/task-management/hooks/column";
+import { useUpdateColumnsPositions } from "./useColumns";
 import { Column } from "@/features/task-management/types";
 
 interface UseColumnDragAndDropProps {
@@ -7,15 +7,15 @@ interface UseColumnDragAndDropProps {
   workspaceId: string
 }
 
-export function useColumnDragAndDrop({columns, workspaceId}: UseColumnDragAndDropProps) {
+export function useColumnDragAndDrop({columns}: UseColumnDragAndDropProps) {
 
-  const {mutate: updatePositions} = useUpdateColumnsPositions()
+  const {mutate: updateColumnPositions} = useUpdateColumnsPositions()
 
   const onReorder = (
     updates: Array<{id: string, position: number}>,
-    optimisticColumns: Column[]
+    
   ) => {
-    updatePositions({updates, optimisticColumns, workspaceId})
+    updateColumnPositions(updates);
   }
 
   return useDragAndDrop({

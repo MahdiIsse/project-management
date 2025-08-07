@@ -2,19 +2,19 @@
 
 import {
   Task,
-  TaskFilterParams,
-  TaskSchemaValues, 
-  TaskWithJoins, 
-  mapTask, 
-} from "@/features/task-management"
-import {createServerClient} from "@/shared/lib/supabase/server"
+  TaskSchemaValues,
+  TaskWithJoins,
+  mapTask,
+} from "@/features/task-management";
+import { createServerClient } from "@/shared/lib/supabase/server";
 
-export async function getTasks(workspaceId: string, filters?: TaskFilterParams): Promise<Task[]> {
-  const supabase = await createServerClient()
+export async function getTasks(workspaceId: string): Promise<Task[]> {
+  const supabase = await createServerClient();
 
-  let query = supabase
-    .from('tasks')
-    .select(`
+  const {data, error } = await supabase
+    .from("tasks")
+    .select(
+      `
     *, 
     task_assignees:task_assignees(
       assignee:assignees(*)
@@ -22,30 +22,16 @@ export async function getTasks(workspaceId: string, filters?: TaskFilterParams):
     task_tags:task_tags(
       tag:tags(*)
     )
-    `)
+    `
+    )
     .eq("workspace_id", workspaceId)
+    .order("position", { ascending: true })
 
-  if (filters?.search) {
-    query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
-  }
+  if (error) throw error;
 
-  if (filters?.priorities && filters.priorities.length > 0) {
-    query = query.in("priority", filters.priorities)
-  }
+  const tasks = ((data as TaskWithJoins[]) || []).map(mapTask);
 
-  query = query.order("position", { ascending: true })
-
-  const { data, error } = await query
-
-  if (error) throw error
-
-  let tasks = (data as TaskWithJoins[] || []).map(mapTask)
-
-  if (filters?.assigneeIds && filters.assigneeIds.length > 0) {
-    tasks = tasks.filter((task) => task.assignees.some(assignee => filters.assigneeIds!.includes(assignee.id)))
-  }
-
-  return tasks
+  return tasks;
 }
 
 export async function createTask(workspaceId: string, data: TaskSchemaValues) {

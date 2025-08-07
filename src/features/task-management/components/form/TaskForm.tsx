@@ -100,7 +100,8 @@ export function TaskForm({
         { onSuccess: () => closeDialog() }
       );
     } else {
-      createTask({ workspaceId, data }, { onSuccess: () => closeDialog() });
+      createTask({ workspaceId, data });
+      closeDialog();
     }
   };
 

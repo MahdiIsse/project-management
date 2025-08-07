@@ -12,6 +12,9 @@ import { StatusSelector } from "./StatusSelector";
 import { useUpdateTask } from "@/features/task-management/hooks";
 import { useColumns } from "@/features/task-management/hooks";
 import { useSearchParams } from "next/navigation";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
 
 interface TaskTableRowProps {
   task: Task;
@@ -64,8 +67,19 @@ export function TaskTableRow({
           </Button>
         </div>
       </TableCell>
-      <TableCell className="text-sm">
-        {new Date(task.createdAt || Date.now()).toLocaleDateString()}
+      <TableCell>
+        <div className="flex items-center gap-2 ">
+          {task.createdAt ? (
+            <>
+              <CalendarIcon className="h-3 w-3" />
+              <span>
+                {format(new Date(task.createdAt), "d MMM", { locale: nl })}
+              </span>
+            </>
+          ) : (
+            "-"
+          )}
+        </div>
       </TableCell>
       <TableCell>
         <DueDatePicker

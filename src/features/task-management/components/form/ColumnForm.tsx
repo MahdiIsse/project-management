@@ -72,15 +72,9 @@ export function ColumnForm({
         }
       );
     } else {
-      createColumn(
-        { id: workspaceId, data },
-        {
-          onSuccess: () => {
-            form.reset();
-            closeDialog();
-          },
-        }
-      );
+      createColumn({ id: workspaceId, data });
+      form.reset();
+      closeDialog();
     }
   };
 

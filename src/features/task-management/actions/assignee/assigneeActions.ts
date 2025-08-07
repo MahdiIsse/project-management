@@ -73,15 +73,18 @@ export async function updateAssignee({assigneeId, formData}: {
   const avatarFile = formData.get("avatarFile") as File | null
   const user = await getAuthenticatedUser()
 
-  let avatarUrl: string | null = null
+  const dataToUpdate: { name: string; avatar_url?: string } = {
+    name,
+  };
 
   if (avatarFile && avatarFile.size > 0) {
-    avatarUrl = await uploadAvatar(avatarFile)
+    const newAvatarUrl = await uploadAvatar(avatarFile)
+    dataToUpdate.avatar_url = newAvatarUrl;
   }
 
   const {error} = await supabase
     .from("assignees")
-    .update({name, avatar_url: avatarUrl})
+    .update(dataToUpdate)
     .eq("id", assigneeId)
     .eq("owner_id", user.id)
 

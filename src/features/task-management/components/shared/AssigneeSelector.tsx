@@ -234,18 +234,25 @@ export function AssigneeSelector({
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 opacity-50 group-hover:opacity-100"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                           <DropdownMenuItem
-                            onClick={() => handleEditClick(assignee)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(assignee);
+                            }}
                           >
                             Bewerken
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDeleteRequest(assignee)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteRequest(assignee);
+                            }}
                             className="text-red-600"
                           >
                             Verwijderen

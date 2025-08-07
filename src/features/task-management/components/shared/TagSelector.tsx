@@ -63,8 +63,8 @@ export function TagSelector({
   const [selectedTag, setSelectedTag] = useState<Tag | undefined>(undefined);
 
   const { data: allTags } = useTags();
-  const { mutate: addTag } = useAddTagToTask();
-  const { mutate: removeTag } = useRemoveTagFromTask();
+  const { mutate: addTag, isPending: isAdding } = useAddTagToTask();
+  const { mutate: removeTag, isPending: isRemoving } = useRemoveTagFromTask();
   const { mutate: deleteTag } = useDeleteTag();
 
   const safeAllTags = allTags || [];
@@ -207,28 +207,29 @@ export function TagSelector({
                 filteredTags.map((tag) => {
                   const assigned = isAssigned(tag.id);
                   const colors = getTagColorByName(tag.colorName);
+
                   return (
                     <div
                       key={tag.id}
                       className={cn(
-                        "group flex items-center space-x-3 p-2 rounded-md transition-colors",
+                        "group flex items-center space-x-3 p-2 rounded-md cursor-pointer transition-colors",
                         "hover:bg-muted/50",
                         assigned && "bg-muted"
                       )}
+                      onClick={() => handleTagToggle(tag)}
                     >
                       <Checkbox
                         checked={assigned}
-                        onClick={() => {
-                          handleTagToggle(tag);
-                        }}
+                        disabled={isAdding || isRemoving}
+                        className="pointer-events-none"
                       />
                       <Badge
                         className={cn(
+                          "text-xs pointer-events-none",
                           colors?.colorBg,
                           colors?.colorText,
                           "pointer-events-none text-xs cursor-pointer"
                         )}
-                        onClick={() => handleTagToggle(tag)}
                       >
                         {tag.name}
                       </Badge>
@@ -240,20 +241,29 @@ export function TagSelector({
                       </span>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent/50 rounded ml-auto shrink-0">
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent/50 rounded ml-auto shrink-0"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem
-                            onClick={() => handleEditClick(tag)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(tag);
+                            }}
                             className="cursor-pointer"
                           >
                             <Settings className="h-4 w-4 mr-2" />
                             Bewerken
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDeleteRequest(tag)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteRequest(tag);
+                            }}
                             className="cursor-pointer text-destructive focus:text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />

@@ -1,7 +1,7 @@
 "use client"
 
 import { Task } from "@/features/task-management/types"
-import { useUpdateTasksPositions } from "@/features/task-management/hooks/task"
+import { useUpdateTasksPositions } from "./useTasks";
 import { useState, useCallback, useMemo } from "react"
 import { DragOverEvent, DragStartEvent } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
@@ -12,12 +12,14 @@ interface UseDragAndDropProps {
   workspaceId: string
 }
 
-export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) {
-  const { mutate: updateTasksPositions } = useUpdateTasksPositions(workspaceId)
+export function useTaskDragAndDrop({ tasks }: UseDragAndDropProps) {
+  const { mutate: updateTasksPositions } = useUpdateTasksPositions();
   const [localTasks, setLocalTasks] = useState<Task[] | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
 
-  const displayTasks = localTasks || tasks
+  const displayTasks = useMemo(() => {
+    return localTasks || tasks
+  }, [localTasks, tasks])
 
   const debouncedColumnUpdate = useMemo(
     () => debounce((newTasks: Task[]) => {
@@ -98,7 +100,7 @@ export function useTaskDragAndDrop({ tasks, workspaceId }: UseDragAndDropProps) 
       position: index,
       columnId: task.columnId
     }))
-    updateTasksPositions({ updates, optimisticTasks: localTasks })
+    updateTasksPositions(updates);
   }
 
   return {
