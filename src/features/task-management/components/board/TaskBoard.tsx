@@ -39,7 +39,14 @@ export function TaskBoard() {
     isLoading: columnsLoading,
     isError: columnsError,
   } = useColumns(workspaceId);
-  const { data: tasks = [] } = useTasks(workspaceId, filters);
+  const {
+    data: tasks = [],
+    isLoading: tasksLoading,
+    isError: tasksError,
+  } = useTasks(workspaceId, filters);
+
+  const isBoardLoading = columnsLoading || tasksLoading;
+  const isBoardError = columnsError || tasksError;
 
   const {
     handleDragEnd: handleTaskDragEnd,
@@ -99,7 +106,7 @@ export function TaskBoard() {
     }, {} as Record<string, typeof displayTasks>);
   }, [displayTasks]);
 
-  if (columnsLoading) {
+  if (isBoardLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -107,7 +114,7 @@ export function TaskBoard() {
     );
   }
 
-  if (columnsError) {
+  if (isBoardError) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-destructive">Er ging iets mis bij het laden.</p>
