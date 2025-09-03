@@ -126,8 +126,13 @@ builder.Services.AddSwaggerGen(c =>
         });
 });
 
-builder.Services.Configure<AzureStorageSettings>(
-    builder.Configuration.GetSection("AzureStorage"));
+builder.Services.Configure<AzureStorageSettings>(options =>
+{
+    var azureStorageConnection = builder.Configuration.GetConnectionString("AzureStorage");
+    options.ConnectionString = azureStorageConnection ?? throw new InvalidOperationException("AzureStorage connection string is required");
+    options.AccountName = builder.Configuration["AzureStorage:AccountName"] ?? throw new InvalidOperationException("AzureStorage:AccountName is required");
+    options.ContainerName = builder.Configuration["AzureStorage:ContainerName"] ?? throw new InvalidOperationException("AzureStorage:ContainerName is required");
+});
 
 builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
@@ -180,14 +185,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapGet("/health", () => "API is running - " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
-
-app.MapGet("/debug-logs", (ILogger<Program> logger) =>
-{
-    logger.LogInformation("🚀 DEBUG: Test log from /debug-logs endpoint at {Time}", DateTime.UtcNow);
-    logger.LogWarning("⚠️ DEBUG: Test warning from endpoint");
-    logger.LogError("❌ DEBUG: Test error from endpoint");
-    return "Debug logs sent! Check Log Stream now.";
-});
 
 app.Run();
 
