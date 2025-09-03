@@ -22,5 +22,6 @@
   "editor.quickSuggestions": {
     "comments": "on",
     "strings": "on"
-  }
+  },
+  "appService.defaultWebAppToDeploy": "None"
 }
