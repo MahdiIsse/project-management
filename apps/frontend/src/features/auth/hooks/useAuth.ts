@@ -1,7 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { apiClient } from "../../../shared/lib/api/client";
-import { LoginSchemaValues, SignUpSchemaValues } from "../schemas/auth";
+'use client';
+
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { apiClient } from '@/shared';
+import { LoginSchemaValues, SignUpSchemaValues } from '@/features/auth';
 
 export function useLogin() {
   const router = useRouter();
@@ -10,13 +12,12 @@ export function useLogin() {
     mutationFn: async (data: LoginSchemaValues) => {
       const response = await apiClient.login({
         email: data.email,
-        password: data.password
+        password: data.password,
       });
       return response;
     },
-    onSuccess: (response) => {
-      apiClient.setAuthToken(response.token);
-      router.push("/dashboard");
+    onSuccess: () => {
+      router.push('/dashboard');
     },
   });
 }
@@ -30,13 +31,12 @@ export function useSignup() {
         email: data.email,
         password: data.password,
         fullName: data.fullName,
-        avatarFile: data.avatarFile
+        avatarFile: data.avatarFile,
       });
       return response;
     },
-    onSuccess: (response) => {
-      apiClient.setAuthToken(response.token);
-      router.push("/dashboard");
+    onSuccess: () => {
+      router.push('/dashboard');
     },
   });
 }

@@ -1,8 +1,7 @@
-import { SidebarProvider } from "../../shared/components/ui/sidebar";
-import { TopNavBar } from "../../features/workspace/components";
-import { AppSidebar } from "../../features/workspace/components/sidebar/AppSidebar";
-import { Toaster } from "sonner";
-import { Suspense } from "react";
+import { TopNavBar, SidebarProvider } from '@/shared';
+import { AppSidebar } from '@/features';
+import { Toaster } from 'sonner';
+import { Suspense } from 'react';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (

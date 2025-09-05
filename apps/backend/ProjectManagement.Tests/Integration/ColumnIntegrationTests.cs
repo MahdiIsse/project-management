@@ -20,8 +20,9 @@ public class ColumnIntegrationTests : IClassFixture<CustomWebApplicationFactory<
 
   private async Task<string> RegisterAndLoginTestUser(string email = "test@example.com")
   {
-    var registerRequest = new RegisterRequestDto { Email = email, Password = "TestPassword123!" };
-    await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
+    var registerRequest = new RegisterRequestDto { Email = email, Password = "TestPassword123!", FullName = "Test User" };
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    await _client.PostAsync("/api/auth/register", formContent);
 
     var loginRequest = new LoginRequestDto { Email = email, Password = "TestPassword123!" };
     var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginRequest);
@@ -236,5 +237,14 @@ public class ColumnIntegrationTests : IClassFixture<CustomWebApplicationFactory<
     Assert.NotNull(column2);
     Assert.Equal(0, column1.Position);
     Assert.Equal(1, column2.Position);
+  }
+
+  private static MultipartFormDataContent CreateRegistrationFormContent(RegisterRequestDto registerRequest)
+  {
+    var formContent = new MultipartFormDataContent();
+    formContent.Add(new StringContent(registerRequest.Email), "Email");
+    formContent.Add(new StringContent(registerRequest.Password), "Password");
+    formContent.Add(new StringContent(registerRequest.FullName), "FullName");
+    return formContent;
   }
 }

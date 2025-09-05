@@ -24,7 +24,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(dashboardUrl);
     }
     
-    // Allow access to protected routes
     if (isProtectedRoute) {
       return NextResponse.next();
     }

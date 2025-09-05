@@ -143,6 +143,59 @@ public class OnboardingService : IOnboardingService
     return tags;
   }
 
+  private static DateTime? GetPortfolioDueDate(int taskIndex, int totalTasks, string workspaceType)
+  {
+    var dueDatePatterns = workspaceType switch
+    {
+      "ecommerce" => new int?[]
+      {
+        -2,
+        0,
+        2,
+        4,
+        8,
+        12,
+        null,
+        15,
+        6,
+        9
+      },
+      "task-management" => new int?[]
+      {
+        -1,
+        1,
+        3,
+        null,
+        7,
+        14,
+        5,
+        null,
+        11,
+        18
+      },
+      "finance" => new int?[]
+      {
+        0,
+        2,
+        6,
+        10,
+        null,
+        16,
+        -3,
+        13,
+        4,
+        20
+      },
+      _ => new int?[] { 7, 14, null, 21, 10 }
+    };
+
+    if (taskIndex < dueDatePatterns.Length && dueDatePatterns[taskIndex].HasValue)
+    {
+      return DateTime.UtcNow.AddDays(dueDatePatterns[taskIndex]!.Value);
+    }
+    return taskIndex % 4 == 3 ? null : DateTime.UtcNow.AddDays(7 + (taskIndex % 10));
+  }
+
   private async Task<(Guid WorkspaceId, int TaskCount, int AssignmentCount, int TagRelationCount)> CreateEcommerceWorkspaceAsync(
       string userId, List<Assignee> assignees, List<Tag> tags)
   {
@@ -154,7 +207,7 @@ public class OnboardingService : IOnboardingService
 
     var columns = new List<Column>();
     var columnNames = new[] { "To Do", "In Progress", "Review", "Done" };
-    var columnColors = new[] { "border-blue-400", "border-yellow-400", "border-purple-400", "border-green-400" };
+    var columnColors = new[] { "#3B82F6", "#EAB308", "#A855F7", "#10B981" };
 
     for (int i = 0; i < columnNames.Length; i++)
     {
@@ -184,6 +237,7 @@ public class OnboardingService : IOnboardingService
 
     var columnIndex = 0;
     var positionInColumn = 0;
+    var taskIndex = 0;
     foreach (var data in taskData)
     {
       if (positionInColumn >= 3) { columnIndex++; positionInColumn = 0; }
@@ -196,13 +250,14 @@ public class OnboardingService : IOnboardingService
           priority: data.Priority,
           position: positionInColumn,
           description: data.Description,
-          dueDate: data.Position % 2 == 0 ? DateTime.UtcNow.AddDays(7 + data.Position) : null
+          dueDate: GetPortfolioDueDate(taskIndex, taskData.Length, "ecommerce")
       );
 
       var createdTask = await _projectTaskRepository.CreateAsync(task);
       tasks.Add(createdTask);
 
       positionInColumn++;
+      taskIndex++;
     }
 
     var assignmentCount = 0;
@@ -281,7 +336,7 @@ public class OnboardingService : IOnboardingService
 
     var columns = new List<Column>();
     var columnNames = new[] { "Backlog", "In Development", "Testing", "Completed" };
-    var columnColors = new[] { "border-gray-400", "border-blue-400", "border-orange-400", "border-green-400" };
+    var columnColors = new[] { "#6B7280", "#3B82F6", "#F97316", "#10B981" };
 
     for (int i = 0; i < columnNames.Length; i++)
     {
@@ -309,6 +364,7 @@ public class OnboardingService : IOnboardingService
       new { Title = "Activity feed dashboard", Description = "Timeline van alle workspace changes voor project transparency", Priority = TaskPriority.Medium, Position = 2, ColumnIndex = 3 }
     };
 
+    var taskIndex = 0;
     foreach (var data in taskData)
     {
       var task = new ProjectTask(
@@ -318,11 +374,12 @@ public class OnboardingService : IOnboardingService
           priority: data.Priority,
           position: data.Position,
           description: data.Description,
-          dueDate: data.Position % 2 == 0 ? DateTime.UtcNow.AddDays(5 + data.Position) : null
+          dueDate: GetPortfolioDueDate(taskIndex, taskData.Length, "task-management")
       );
 
       var createdTask = await _projectTaskRepository.CreateAsync(task);
       tasks.Add(createdTask);
+      taskIndex++;
     }
 
     var assignmentCount = 0;
@@ -401,7 +458,7 @@ public class OnboardingService : IOnboardingService
 
     var columns = new List<Column>();
     var columnNames = new[] { "Planning", "Building", "Testing", "Deployed" };
-    var columnColors = new[] { "border-indigo-400", "border-yellow-400", "border-red-400", "border-green-400" };
+    var columnColors = new[] { "#6366F1", "#EAB308", "#EF4444", "#10B981" };
 
     for (int i = 0; i < columnNames.Length; i++)
     {
@@ -429,6 +486,7 @@ public class OnboardingService : IOnboardingService
       new { Title = "Savings goals tracker", Description = "Visual progress tracking voor spaar doelen met percentage en tijd indicatoren", Priority = TaskPriority.Medium, Position = 2, ColumnIndex = 3 }
     };
 
+    var taskIndex = 0;
     foreach (var data in taskData)
     {
       var task = new ProjectTask(
@@ -438,11 +496,12 @@ public class OnboardingService : IOnboardingService
           priority: data.Priority,
           position: data.Position,
           description: data.Description,
-          dueDate: data.Position % 2 == 0 ? DateTime.UtcNow.AddDays(10 + data.Position) : null
+          dueDate: GetPortfolioDueDate(taskIndex, taskData.Length, "finance")
       );
 
       var createdTask = await _projectTaskRepository.CreateAsync(task);
       tasks.Add(createdTask);
+      taskIndex++;
     }
 
     var assignmentCount = 0;

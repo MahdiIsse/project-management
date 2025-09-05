@@ -1,33 +1,32 @@
-"use client";
+'use client';
 
-import { cn } from "../../../shared/lib/utils/utils";
-import { Button } from "../../../shared/components/ui/button";
-import { Input } from "../../../shared/components/ui/input";
-import { loginSchema, LoginSchemaValues } from "../schemas/auth";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  cn,
+  Button,
+  Input,
   Form,
   FormField,
   FormLabel,
   FormControl,
   FormMessage,
   FormItem,
-} from "../../../shared/components/ui/form";
-import Link from "next/link";
-import { useLogin } from "../hooks/useAuth";
+} from '@/shared';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, LoginSchemaValues, useLogin } from '@/features/auth';
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"form">) {
+}: React.ComponentProps<'form'>) {
   const { mutate: login, isPending, isError, error } = useLogin();
 
   const form = useForm<LoginSchemaValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
@@ -38,7 +37,7 @@ export function LoginForm({
   return (
     <Form {...form}>
       <form
-        className={cn("flex flex-col gap-6", className)}
+        className={cn('flex flex-col gap-6', className)}
         onSubmit={form.handleSubmit(onSubmit)}
         {...props}
       >
@@ -88,7 +87,7 @@ export function LoginForm({
           />
           {isError && <div className="text-red-700">{error.message}</div>}
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Inloggen..." : "Inloggen"}
+            {isPending ? 'Inloggen...' : 'Inloggen'}
           </Button>
         </div>
         <div className="text-center text-sm ">

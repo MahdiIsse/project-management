@@ -1,8 +1,8 @@
 {
   "/_not-found/page": "/_not-found",
   "/icon.svg/route": "/icon.svg",
-  "/signup/page": "/signup",
   "/page": "/",
+  "/signup/page": "/signup",
   "/dashboard/page": "/dashboard",
   "/login/page": "/login"
 }

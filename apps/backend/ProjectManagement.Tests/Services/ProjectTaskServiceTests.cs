@@ -336,7 +336,8 @@ public class ProjectTaskServiceTests
       Description = description,
       Priority = priority,
       Position = position,
-      DueDate = DateTime.UtcNow.AddDays(7)
+      DueDate = DateTime.UtcNow.AddDays(7),
+      ColumnId = Guid.NewGuid()
     };
   }
 }

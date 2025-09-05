@@ -21,8 +21,9 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
 
   private async Task<string> RegisterAndLoginTestUser(string email = "test@example.com")
   {
-    var registerRequest = new RegisterRequestDto { Email = email, Password = "TestPassword123!" };
-    await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
+    var registerRequest = new RegisterRequestDto { Email = email, Password = "TestPassword123!", FullName = "Test User" };
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    await _client.PostAsync("/api/auth/register", formContent);
 
     var loginRequest = new LoginRequestDto { Email = email, Password = "TestPassword123!" };
     var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginRequest);
@@ -47,7 +48,8 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
       AvatarUrl = "https://example.com/avatar.jpg"
     };
 
-    var response = await _client.PostAsJsonAsync("/api/assignee", createRequest);
+    var formContent = CreateAssigneeFormContent(createRequest);
+    var response = await _client.PostAsync("/api/assignee", formContent);
     var createdAssignee = await response.Content.ReadFromJsonAsync<AssigneeDto>();
 
     Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -69,7 +71,8 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
       AvatarUrl = "https://example.com/avatar.jpg"
     };
 
-    var response = await _client.PostAsJsonAsync("/api/assignee", createRequest);
+    var formContent = CreateAssigneeFormContent(createRequest);
+    var response = await _client.PostAsync("/api/assignee", formContent);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
   }
@@ -81,10 +84,12 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
     _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
     var createRequest1 = new CreateAssigneeDto { Name = "Assignee 1" };
-    await _client.PostAsJsonAsync("/api/assignee", createRequest1);
+    var formContent1 = CreateAssigneeFormContent(createRequest1);
+    await _client.PostAsync("/api/assignee", formContent1);
 
     var createRequest2 = new CreateAssigneeDto { Name = "Assignee 2" };
-    await _client.PostAsJsonAsync("/api/assignee", createRequest2);
+    var formContent2 = CreateAssigneeFormContent(createRequest2);
+    await _client.PostAsync("/api/assignee", formContent2);
 
     var response = await _client.GetAsync("/api/assignee");
     var assignees = await response.Content.ReadFromJsonAsync<List<AssigneeDto>>();
@@ -103,7 +108,8 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
     _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
     var createRequest = new CreateAssigneeDto { Name = "Test Assignee" };
-    var createResponse = await _client.PostAsJsonAsync("/api/assignee", createRequest);
+    var createFormContent = CreateAssigneeFormContent(createRequest);
+    var createResponse = await _client.PostAsync("/api/assignee", createFormContent);
     var createdAssignee = await createResponse.Content.ReadFromJsonAsync<AssigneeDto>();
 
     var response = await _client.GetAsync($"/api/assignee/{createdAssignee!.Id}");
@@ -135,7 +141,8 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
     _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
     var createRequest = new CreateAssigneeDto { Name = "Original Name" };
-    var createResponse = await _client.PostAsJsonAsync("/api/assignee", createRequest);
+    var createFormContent = CreateAssigneeFormContent(createRequest);
+    var createResponse = await _client.PostAsync("/api/assignee", createFormContent);
     var createdAssignee = await createResponse.Content.ReadFromJsonAsync<AssigneeDto>();
 
     var updateRequest = new UpdateAssigneeDto
@@ -144,7 +151,8 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
       AvatarUrl = "https://example.com/new-avatar.jpg"
     };
 
-    var response = await _client.PutAsJsonAsync($"/api/assignee/{createdAssignee!.Id}", updateRequest);
+    var updateFormContent = UpdateAssigneeFormContent(updateRequest);
+    var response = await _client.PutAsync($"/api/assignee/{createdAssignee!.Id}", updateFormContent);
     var updatedAssignee = await response.Content.ReadFromJsonAsync<AssigneeDto>();
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -161,7 +169,8 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
     _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
     var createRequest = new CreateAssigneeDto { Name = "Assignee to Delete" };
-    var createResponse = await _client.PostAsJsonAsync("/api/assignee", createRequest);
+    var createFormContent = CreateAssigneeFormContent(createRequest);
+    var createResponse = await _client.PostAsync("/api/assignee", createFormContent);
     var createdAssignee = await createResponse.Content.ReadFromJsonAsync<AssigneeDto>();
 
     var response = await _client.DeleteAsync($"/api/assignee/{createdAssignee!.Id}");
@@ -170,5 +179,32 @@ public class AssigneeIntegrationTests : IClassFixture<CustomWebApplicationFactor
 
     var getResponse = await _client.GetAsync($"/api/assignee/{createdAssignee.Id}");
     Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+  }
+
+  private static MultipartFormDataContent CreateRegistrationFormContent(RegisterRequestDto registerRequest)
+  {
+    var formContent = new MultipartFormDataContent();
+    formContent.Add(new StringContent(registerRequest.Email), "Email");
+    formContent.Add(new StringContent(registerRequest.Password), "Password");
+    formContent.Add(new StringContent(registerRequest.FullName), "FullName");
+    return formContent;
+  }
+
+  private static MultipartFormDataContent CreateAssigneeFormContent(CreateAssigneeDto createRequest)
+  {
+    var formContent = new MultipartFormDataContent();
+    formContent.Add(new StringContent(createRequest.Name), "Name");
+    if (createRequest.AvatarUrl != null)
+      formContent.Add(new StringContent(createRequest.AvatarUrl), "AvatarUrl");
+    return formContent;
+  }
+
+  private static MultipartFormDataContent UpdateAssigneeFormContent(UpdateAssigneeDto updateRequest)
+  {
+    var formContent = new MultipartFormDataContent();
+    formContent.Add(new StringContent(updateRequest.Name), "Name");
+    if (updateRequest.AvatarUrl != null)
+      formContent.Add(new StringContent(updateRequest.AvatarUrl), "AvatarUrl");
+    return formContent;
   }
 }

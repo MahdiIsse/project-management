@@ -1,16 +1,15 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "../../../shared/lib/api/client";
-import type { User } from "../types/user";
-
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/shared';
+import type { User } from '@/features/auth';
 
 export function useCurrentUser() {
   return useQuery<User, Error>({
-    queryKey: ["user"],
+    queryKey: ['user'],
     queryFn: async () => {
       const userData = await apiClient.getCurrentUser();
-      
+
       return {
         id: userData.id,
         email: userData.email,

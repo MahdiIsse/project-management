@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { DashboardContainer } from "../../features/task-management";
+import { Suspense } from 'react';
+import { DashboardContainer } from '@/features';
 
 export default function DashboardPage() {
   return (

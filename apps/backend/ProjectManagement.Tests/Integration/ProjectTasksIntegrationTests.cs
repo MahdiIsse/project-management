@@ -26,8 +26,9 @@ public class ProjectTasksIntegrationTests : IClassFixture<CustomWebApplicationFa
 
   private async Task<string> RegisterAndLoginTestUser(string email = "test@example.com")
   {
-    var registerRequest = new RegisterRequestDto { Email = email, Password = "TestPassword123!" };
-    await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
+    var registerRequest = new RegisterRequestDto { Email = email, Password = "TestPassword123!", FullName = "Test User" };
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    await _client.PostAsync("/api/auth/register", formContent);
 
     var loginRequest = new LoginRequestDto { Email = email, Password = "TestPassword123!" };
     var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginRequest);
@@ -82,7 +83,8 @@ public class ProjectTasksIntegrationTests : IClassFixture<CustomWebApplicationFa
       AvatarUrl = null
     };
 
-    var response = await _client.PostAsJsonAsync("/api/assignee", createAssigneeRequest);
+    var formContent = CreateAssigneeFormContent(createAssigneeRequest);
+    var response = await _client.PostAsync("/api/assignee", formContent);
     var assignee = await response.Content.ReadFromJsonAsync<AssigneeDto>();
 
     return assignee!;
@@ -207,7 +209,8 @@ public class ProjectTasksIntegrationTests : IClassFixture<CustomWebApplicationFa
       Priority = TaskPriority.High,
       Description = "Updated description",
       Position = 2,
-      DueDate = DateTime.UtcNow.AddDays(3)
+      DueDate = DateTime.UtcNow.AddDays(3),
+      ColumnId = column.Id
     };
 
     var response = await _client.PutAsJsonAsync($"/api/workspaces/{workspace.Id}/tasks/{createdTask!.Id}", updateRequest);
@@ -311,7 +314,8 @@ public class ProjectTasksIntegrationTests : IClassFixture<CustomWebApplicationFa
     {
       Title = "Updated Title",
       Priority = TaskPriority.High,
-      Position = 1
+      Position = 1,
+      ColumnId = Guid.NewGuid()
     };
 
     var nonExistentTaskId = Guid.NewGuid();
@@ -357,5 +361,23 @@ public class ProjectTasksIntegrationTests : IClassFixture<CustomWebApplicationFa
     var response = await _client.PostAsJsonAsync($"/api/workspaces/{workspace.Id}/tasks/{task!.Id}/tags/{tag.Id}", new { });
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+  }
+
+  private static MultipartFormDataContent CreateRegistrationFormContent(RegisterRequestDto registerRequest)
+  {
+    var formContent = new MultipartFormDataContent();
+    formContent.Add(new StringContent(registerRequest.Email), "Email");
+    formContent.Add(new StringContent(registerRequest.Password), "Password");
+    formContent.Add(new StringContent(registerRequest.FullName), "FullName");
+    return formContent;
+  }
+
+  private static MultipartFormDataContent CreateAssigneeFormContent(CreateAssigneeDto createRequest)
+  {
+    var formContent = new MultipartFormDataContent();
+    formContent.Add(new StringContent(createRequest.Name), "Name");
+    if (createRequest.AvatarUrl != null)
+      formContent.Add(new StringContent(createRequest.AvatarUrl), "AvatarUrl");
+    return formContent;
   }
 }

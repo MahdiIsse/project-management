@@ -1,28 +1,29 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
-import { cn } from "../../../shared/lib/utils/utils";
-import { Button } from "../../../shared/components/ui/button";
-import { Input } from "../../../shared/components/ui/input";
-import { signUpSchema, SignUpSchemaValues } from "../schemas";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from '@/shared';
 import {
+  Button,
+  Input,
   Form,
   FormField,
   FormLabel,
   FormControl,
   FormItem,
-} from "../../../shared/components/ui/form";
-import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../shared";
-import { useSignup } from "../hooks/useAuth";
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/shared';
+import { signUpSchema, SignUpSchemaValues, useSignup } from '@/features/auth';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
 
 export function SignUpForm({
   className,
   ...props
-}: React.ComponentProps<"form">) {
+}: React.ComponentProps<'form'>) {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const { mutate: signup, isPending, isError, error } = useSignup();
@@ -30,10 +31,10 @@ export function SignUpForm({
   const form = useForm<SignUpSchemaValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
       avatarFile: undefined,
     },
   });
@@ -45,7 +46,7 @@ export function SignUpForm({
   return (
     <Form {...form}>
       <form
-        className={cn("flex flex-col gap-6", className)}
+        className={cn('flex flex-col gap-6', className)}
         onSubmit={form.handleSubmit(onSubmit)}
         {...props}
       >
@@ -68,12 +69,12 @@ export function SignUpForm({
                   >
                     <Avatar className="h-24 w-24 border-2 border-primary group-hover:ring-4 group-hover:ring-primary/30 transition-all duration-200">
                       <AvatarImage
-                        src={avatarPreview ?? ""}
+                        src={avatarPreview ?? ''}
                         alt="User avatar"
                       />
                       <AvatarFallback className="text-4xl">
-                        {form.getValues("fullName")?.charAt(0).toUpperCase() ||
-                          ""}
+                        {form.getValues('fullName')?.charAt(0).toUpperCase() ||
+                          ''}
                       </AvatarFallback>
                     </Avatar>
                   </FormLabel>
@@ -174,7 +175,7 @@ export function SignUpForm({
           />
           {isError && <div className="text-red-700">{error.message}</div>}
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Account aanmaken..." : "Account aanmaken"}
+            {isPending ? 'Account aanmaken...' : 'Account aanmaken'}
           </Button>
         </div>
         <div className="text-center text-sm">

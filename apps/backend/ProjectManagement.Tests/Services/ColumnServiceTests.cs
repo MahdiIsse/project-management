@@ -8,6 +8,7 @@ using ProjectManagement.Application.Services;
 using ProjectManagement.Infrastructure.Exceptions;
 using ProjectManagement.Infrastructure.Mappings;
 using ProjectManagement.Application.Interfaces.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace ProjectManagement.Tests;
 
@@ -29,7 +30,8 @@ public class ColumnServiceTests
 
     _columnService = new ColumnService(
         _columnRepository.Object,
-        _mapper
+        _mapper,
+        Mock.Of<ILogger<ColumnService>>()
     );
   }
 

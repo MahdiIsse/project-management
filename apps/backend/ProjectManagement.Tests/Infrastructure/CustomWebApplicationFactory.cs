@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectManagement.Infrastructure.Data;
+using ProjectManagement.Application.Interfaces.Services;
+using ProjectManagement.Tests.Infrastructure;
 
 namespace ProjectManagement.Tests;
 
@@ -42,6 +44,9 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
         options.DefaultScheme = "Test";
       })
       .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => { });
+
+      services.RemoveAll<IFileUploadService>();
+      services.AddScoped<IFileUploadService, MockFileUploadService>();
     });
 
     builder.ConfigureAppConfiguration((context, config) =>

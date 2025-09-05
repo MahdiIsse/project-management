@@ -23,10 +23,12 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
     var registerRequest = new RegisterRequestDto
     {
       Email = email,
-      Password = "TestPassword123!"
+      Password = "TestPassword123!",
+      FullName = "Test User"
     };
 
-    var response = await _client.PostAsJsonAsync("api/auth/register", registerRequest);
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    var response = await _client.PostAsync("api/auth/register", formContent);
     var result = await response.Content.ReadFromJsonAsync<RegisterResponseDto>();
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -51,10 +53,12 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
     var registerRequest = new RegisterRequestDto
     {
       Email = "invalid-email",
-      Password = "ValidPassword123!"
+      Password = "ValidPassword123!",
+      FullName = "User"
     };
 
-    var response = await _client.PostAsJsonAsync("api/auth/register", registerRequest);
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    var response = await _client.PostAsync("api/auth/register", formContent);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
   }
@@ -65,10 +69,12 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
     var registerRequest = new RegisterRequestDto
     {
       Email = "test@example.com",
-      Password = "12345"
+      Password = "12345",
+      FullName = "User"
     };
 
-    var response = await _client.PostAsJsonAsync("api/auth/register", registerRequest);
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    var response = await _client.PostAsync("api/auth/register", formContent);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
   }
@@ -79,10 +85,12 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
     var registerRequest = new RegisterRequestDto
     {
       Email = "logintest@example.com",
-      Password = "ValidPassword123!"
+      Password = "ValidPassword123!",
+      FullName = "User"
     };
 
-    await _client.PostAsJsonAsync("api/auth/register", registerRequest);
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    await _client.PostAsync("api/auth/register", formContent);
 
     var loginRequest = new LoginRequestDto
     {
@@ -104,10 +112,12 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
     var registerRequest = new RegisterRequestDto
     {
       Email = "invalidlogin@example.com",
-      Password = "ValidPassword123!"
+      Password = "ValidPassword123!",
+      FullName = "User"
     };
 
-    await _client.PostAsJsonAsync("api/auth/register", registerRequest);
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    await _client.PostAsync("api/auth/register", formContent);
 
     var loginRequest = new LoginRequestDto
     {
@@ -155,10 +165,12 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
     var registerRequest = new RegisterRequestDto
     {
       Email = email,
-      Password = "TestPassword123!"
+      Password = "TestPassword123!",
+      FullName = "Test User"
     };
 
-    var response = await _client.PostAsJsonAsync("api/auth/register", registerRequest);
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    var response = await _client.PostAsync("api/auth/register", formContent);
     var result = await response.Content.ReadFromJsonAsync<RegisterResponseDto>();
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -173,10 +185,12 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
     var registerRequest = new RegisterRequestDto
     {
       Email = $"weak-pass-{Guid.NewGuid()}@example.com",
-      Password = "123"
+      Password = "123",
+      FullName = "User",
     };
 
-    var response = await _client.PostAsJsonAsync("api/auth/register", registerRequest);
+    var formContent = CreateRegistrationFormContent(registerRequest);
+    var response = await _client.PostAsync("api/auth/register", formContent);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
   }
@@ -188,18 +202,31 @@ public class AuthIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pr
     var firstRequest = new RegisterRequestDto
     {
       Email = email,
-      Password = "TestPassword123!"
+      Password = "TestPassword123!",
+      FullName = "Test User"
     };
-    await _client.PostAsJsonAsync("api/auth/register", firstRequest);
+    var firstFormContent = CreateRegistrationFormContent(firstRequest);
+    await _client.PostAsync("api/auth/register", firstFormContent);
 
     var secondRequest = new RegisterRequestDto
     {
       Email = email,
-      Password = "DifferentPassword123!"
+      Password = "DifferentPassword123!",
+      FullName = "Test User"
     };
 
-    var response = await _client.PostAsJsonAsync("api/auth/register", secondRequest);
+    var secondFormContent = CreateRegistrationFormContent(secondRequest);
+    var response = await _client.PostAsync("api/auth/register", secondFormContent);
 
     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+  }
+
+  private static MultipartFormDataContent CreateRegistrationFormContent(RegisterRequestDto registerRequest)
+  {
+    var formContent = new MultipartFormDataContent();
+    formContent.Add(new StringContent(registerRequest.Email), "Email");
+    formContent.Add(new StringContent(registerRequest.Password), "Password");
+    formContent.Add(new StringContent(registerRequest.FullName), "FullName");
+    return formContent;
   }
 }
