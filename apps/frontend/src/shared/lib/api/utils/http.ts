@@ -41,6 +41,13 @@ async function makeRequest<T>(
   const response = await fetch(url, config);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      removeAuthToken();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired. Please log in again.');
+    }
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 

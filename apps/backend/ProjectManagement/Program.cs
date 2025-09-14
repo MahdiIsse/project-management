@@ -157,22 +157,6 @@ var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-if (app.Environment.IsProduction())
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        try
-        {
-            db.Database.Migrate();
-            logger.LogInformation("Database migration completed successfully");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Database migration failed - application will continue without migration");
-        }
-    }
-}
 
 app.UseSwagger();
 app.UseSwaggerUI();
